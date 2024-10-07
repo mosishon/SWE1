@@ -1,5 +1,6 @@
-##Project Structure:
-```fastapi-project
+## Project Structure:
+```
+fastapi-project
 ├── alembic/ # for migretions (Optional)
 ├── src
 │   ├── app1
