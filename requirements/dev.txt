@@ -1,4 +1,6 @@
 black
+fastapi
 flake8
 isort
 pre-commit
+sqlalchemy
