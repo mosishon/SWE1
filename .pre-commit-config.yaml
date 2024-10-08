@@ -50,3 +50,7 @@ repos:
       - id: mypy
         additional_dependencies: [sqlalchemy-stubs, types-ujson]
         args: ['--strict', '--ignore-missing-imports']
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.17.0
+    hooks:
+    -   id: pyupgrade
