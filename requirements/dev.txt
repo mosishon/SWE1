@@ -2,8 +2,10 @@ black
 fastapi
 flake8
 isort
+mypy
 passlib[bcrypt]
 pre-commit
 pydantic
 pyupgrade
-sqlalchemy
+sqlalchemy2-stubs
+sqlalchemy[mypy]
