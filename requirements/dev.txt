@@ -6,5 +6,7 @@ mypy
 passlib[bcrypt]
 pre-commit
 pydantic
+pydantic-settings
+pyjwt
 pyupgrade
 sqlalchemy[mypy]

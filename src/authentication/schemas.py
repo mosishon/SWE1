@@ -7,7 +7,6 @@ from src.cutsom_types import HashedPassword, TimeStamp
 class TokenData(BaseModel):
     user_id: int
     exp: TimeStamp
-    force_exp: bool = False
 
 
 class Token(BaseModel):
