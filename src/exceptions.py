@@ -1,0 +1,2 @@
+class InstructorTimeIsFull(BaseException):
+    pass
