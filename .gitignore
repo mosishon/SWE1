@@ -3,3 +3,5 @@ __pycache__/
 **/*.dot
 .vscode/
 .env
+.ruff_cache/
+.mypy_cache/
