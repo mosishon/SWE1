@@ -7,5 +7,4 @@ passlib[bcrypt]
 pre-commit
 pydantic
 pyupgrade
-sqlalchemy2-stubs
 sqlalchemy[mypy]

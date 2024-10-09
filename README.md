@@ -43,3 +43,10 @@ fastapi-project
 ├── logging.ini
 └── alembic.ini # Alembic configs
 ```
+
+# Before Development
+Need to configure pre-commit and install requirements for develpment environment
+```
+pip install -r requirements/dev.txt
+pre-commit install
+```
