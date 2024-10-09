@@ -1,3 +1,4 @@
+asyncpg
 black
 fastapi
 flake8
@@ -9,4 +10,5 @@ pydantic
 pydantic-settings
 pyjwt
 pyupgrade
-sqlalchemy[mypy]
+sqlalchemy[asyncio]
+uvicorn

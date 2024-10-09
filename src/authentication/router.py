@@ -8,7 +8,7 @@ from src.authentication.constants import ACCESS_TOKEN_EXPIRE_MINUTES, LOGIN_ROUT
 from src.authentication.schemas import LoginData, Token, TokenData
 from src.authentication.utils import create_access_token, hash_password, to_async
 from src.dependencies import SessionMaker
-from src.models import Student
+from src.student.models import Student
 
 backend = OAuth2PasswordBearer(f"/auth/{LOGIN_ROUTE}")
 router = APIRouter(prefix="/auth", tags=["Authentication"])
