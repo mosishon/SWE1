@@ -2,17 +2,20 @@ import datetime
 from enum import Enum
 from typing import List, NewType, Tuple
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, EmailStr, model_validator
 
 from src.exceptions import InstructorTimeIsFull
 
 HashedPassword = NewType("HashedPassword", str)
 CourseSectionTime = NewType("CourseSectionTime", datetime.time)
+PhoneNumber = NewType("PhoneNumber", int)
+NationalID = NewType("NationalID", int)
+StudnentID = NewType("StudnentID", int)
 
 
 class DayOfWeek(int, Enum):
     shanbe = 0
-    yek_shanbe = 0
+    yek_shanbe = 1
     ...
 
 
@@ -21,9 +24,20 @@ class CourseSectionCount(int, Enum):
     two = 2
 
 
-class User(BaseModel):
+class Student(BaseModel):
     first_name: str
     last_name: str
+    national_id: NationalID
+    student_id: StudnentID
+    email: EmailStr
+    username: str
+    phone_number: PhoneNumber
+    birth_day: datetime.datetime
+    password: HashedPassword
+
+
+class Admin(BaseModel):
+    username: str
     password: HashedPassword
 
 
