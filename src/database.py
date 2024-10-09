@@ -7,9 +7,10 @@ from sqlalchemy.ext.asyncio.session import AsyncSession, async_sessionmaker
 from src.config import config
 from src.models import BaseModel
 
+URI = f"postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@\
+        {config.postgres_host}:{config.postgres_port}/{config.postgres_db}"
 engine = create_async_engine(
-    f"postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@\
-        {config.postgres_host}:{config.postgres_port}/{config.postgres_db}",
+    URI,
     pool_size=20,
     max_overflow=80,
 )
