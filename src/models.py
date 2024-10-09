@@ -1,6 +1,7 @@
 import datetime
+import enum
 
-from sqlalchemy import BigInteger, String
+from sqlalchemy import BigInteger, Enum, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from src.cutsom_types import HashedPassword, NationalID, PhoneNumber, StudnentID
@@ -16,10 +17,14 @@ class BaseModel(DeclarativeBase):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
 
-# TODO We need a base user and use it for all user types  (Student,Instructor,Admin , ...)
+class UserRole(enum.Enum):
+    ADMIN = "admin"
+    STUDENT = "student"
+    Instructor = "instructor"
 
 
 class User(BaseModel):
+    __tablename__ = "user"
     first_name: Mapped[str] = mapped_column()
     last_name: Mapped[str] = mapped_column()
     national_id: Mapped[NationalID] = mapped_column(index=True)
@@ -28,3 +33,4 @@ class User(BaseModel):
     phone_number: Mapped[PhoneNumber] = mapped_column()
     birth_day: Mapped[datetime.datetime] = mapped_column()
     password: Mapped[HashedPassword] = mapped_column()
+    role: Mapped[str] = mapped_column(Enum(UserRole))
