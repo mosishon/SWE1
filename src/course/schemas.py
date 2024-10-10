@@ -4,7 +4,7 @@ from typing import NewType, Tuple
 
 from pydantic import BaseModel
 
-from src.instructor.schemas import Instructor
+from src.instructor.schemas import FullInstructor
 
 CourseSectionTime = NewType("CourseSectionTime", datetime.time)
 
@@ -29,7 +29,7 @@ class CourseSection(BaseModel):
 class Course(BaseModel):
     name: str
     short_name: str
-    instructor: Instructor
+    instructor: FullInstructor
     sections_count: CourseSectionCount
     unit: int
     importance: int

@@ -1,24 +1,24 @@
-from typing import List
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, model_validator
 
-from exceptions import InstructorTimeIsFull
-from src.course.schemas import Course, CourseSection
-from src.cutsom_types import HashedPassword
+from src.instructor.exceptions import InstructorTimeIsFull, UserIsNotInstructor
+from src.schemas import FullUser, UserRole
+
+if TYPE_CHECKING:
+    from src.course.schemas import CourseSection
 
 
-class Instructor(BaseModel):
-    first_name: str
-    last_name: str
-    username: str
-    password: HashedPassword
-    available_course_sections: List[CourseSection]
-    courses: List[Course]
+class FullInstructor(BaseModel):
+    full_user: FullUser
+    available_course_sections: list["CourseSection"]
 
     @model_validator(mode="before")
-    def validate_courses_and_available_times(cls, values) -> "Instructor":
+    def validate_courses_and_available_times(cls, values) -> "FullInstructor":
         sections_need = sum(map(lambda x: x.sections_count, values["courses"]))
         sections_have = len(values["available_course_sections"])
         if sections_need > sections_have:
             raise InstructorTimeIsFull("test")
+        elif values["full_user"].role != UserRole.Instructor:
+            raise UserIsNotInstructor("test")
         return cls
