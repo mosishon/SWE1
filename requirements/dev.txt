@@ -7,8 +7,8 @@ isort
 mypy
 passlib[bcrypt]
 pre-commit
-pydantic
 pydantic-settings
+pydantic[email]
 pyjwt
 pyupgrade
 sqlalchemy[asyncio]

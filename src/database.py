@@ -8,7 +8,9 @@ from src.config import config
 from src.models import BaseModel
 
 URI = f"postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@\
-        {config.postgres_host}:{config.postgres_port}/{config.postgres_db}"
+{config.postgres_host}:{config.postgres_port}/{config.postgres_db}"
+
+print(URI)
 engine = create_async_engine(
     URI,
     pool_size=20,
@@ -21,9 +23,9 @@ def get_session_maker() -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(engine)
 
 
-async def main():
+async def main_run():
     async with engine.begin() as conn:
         await conn.run_sync(BaseModel.metadata.create_all)
 
 
-asyncio.get_event_loop().run_until_complete(main())
+asyncio.create_task(main_run())
