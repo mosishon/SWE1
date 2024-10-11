@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import BigInteger, Enum, String
+from sqlalchemy import BigInteger, DateTime, Enum, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from src.cutsom_types import HashedPassword, NationalID, PhoneNumber, StudnentID
@@ -27,6 +27,8 @@ class User(BaseModel):
     email: Mapped[str] = mapped_column(unique=True)
     username: Mapped[str] = mapped_column(index=True, unique=True)
     phone_number: Mapped[PhoneNumber] = mapped_column(unique=True)
-    birth_day: Mapped[datetime.datetime] = mapped_column()
+    birth_day: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=False))
     password: Mapped[HashedPassword] = mapped_column()
-    role: Mapped[str] = mapped_column(Enum(UserRole))
+    role: Mapped[str] = mapped_column(
+        Enum(UserRole, name="userrole", create_type=True), nullable=False
+    )
