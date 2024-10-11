@@ -23,3 +23,20 @@ class FullUser(BaseModel):
     birth_day: datetime.datetime
     password: HashedPassword
     role: UserRole
+
+
+class UserInfoL1(FullUser):
+    class Config:
+        fields = {
+            "password": {"exclude": True},
+            "id": {"exclude": True},
+            "role": {"exclude": True},
+        }
+
+
+class UserRegisterData(FullUser):
+    class Config:
+        fields = {
+            "id": {"exclude": True},
+            "role": {"exclude": True},
+        }

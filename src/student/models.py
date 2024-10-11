@@ -6,8 +6,8 @@ from src.models import BaseModel
 
 
 # NOT FULL VERSION
-class StudentOptions(BaseModel):
-    __tablename__ = "student_options"
+class Student(BaseModel):
+    __tablename__ = "student"
     student_id: Mapped[StudnentID] = mapped_column(index=True)
 
     for_user: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)

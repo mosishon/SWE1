@@ -8,16 +8,13 @@ from src.authentication.constants import (
     LOGIN_ROUTE,
     REGISTRATION_ROUTE,
 )
-from src.authentication.schemas import (
-    LoginData,
-    StudentIn,
-    StudentOut,
-    Token,
-    TokenData,
-)
+from src.authentication.schemas import LoginData, Token, TokenData
 from src.authentication.utils import create_access_token, hash_password, to_async
 from src.dependencies import SessionMaker
 from src.models import User
+from src.schemas import UserRole
+from src.student.models import Student
+from src.student.schemas import StudentInfo, StudentRegisterData
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -32,7 +29,7 @@ async def login(data: LoginData, maker: SessionMaker):
         result = await session.execute(
             sa.select(User.id)
             .where(User.username == data.username)
-            .where(User.password == await to_async(hash_password(data.password)))
+            .where(User.password == await to_async(hash_password, data.password))
         )
         uid = result.scalar_one_or_none()
         if uid:
@@ -52,12 +49,13 @@ async def login(data: LoginData, maker: SessionMaker):
             )
 
 
+# TODO error handling
 @router.post(
-    REGISTRATION_ROUTE, status_code=status.HTTP_201_CREATED, response_model=StudentOut
+    REGISTRATION_ROUTE, status_code=status.HTTP_201_CREATED, response_model=StudentInfo
 )
-async def create_user(data: StudentIn, maker: SessionMaker):
+async def create_user(data: StudentRegisterData, maker: SessionMaker):
     async with maker.begin() as session:
-        create_user_model = User(
+        user = User(
             first_name=data.first_name,
             last_name=data.last_name,
             national_id=data.national_id,
@@ -65,9 +63,11 @@ async def create_user(data: StudentIn, maker: SessionMaker):
             username=data.username,
             phone_number=data.phone_number,
             birth_day=data.birth_day,
-            password=hash_password(data.password),
-            role="student",
+            password=await to_async(hash_password, data.password),
+            role=UserRole.STUDENT,
         )
-        session.add(create_user_model)
-
-    return create_user_model
+        student = Student()
+        student.for_user = user.id
+        student.student_id = data.student_id
+        session.add_all([user, student])
+        return StudentInfo.model_validate(user)
