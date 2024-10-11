@@ -3,7 +3,7 @@ import enum
 
 from pydantic import BaseModel, EmailStr
 
-from src.cutsom_types import HashedPassword, NationalID, PhoneNumber, StudnentID
+from src.cutsom_types import HashedPassword, NationalID, PhoneNumber
 
 
 class UserRole(enum.Enum):
@@ -17,7 +17,6 @@ class FullUser(BaseModel):
     first_name: str
     last_name: str
     national_id: NationalID
-    student_id: StudnentID
     email: EmailStr
     username: str
     phone_number: PhoneNumber
