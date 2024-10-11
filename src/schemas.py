@@ -1,7 +1,6 @@
-import datetime
 import enum
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, NaiveDatetime
 
 from src.cutsom_types import HashedPassword, NationalID, PhoneNumber
 
@@ -9,34 +8,33 @@ from src.cutsom_types import HashedPassword, NationalID, PhoneNumber
 class UserRole(enum.Enum):
     ADMIN = "admin"
     STUDENT = "student"
-    Instructor = "instructor"
+    INSTRUCTOR = "instructor"
 
 
-class FullUser(BaseModel):
-    id: int
+class BaseUser(BaseModel):
     first_name: str
     last_name: str
-    national_id: NationalID
+    birth_day: NaiveDatetime
+
+
+class UserFullInfo(BaseUser):
     email: EmailStr
-    username: str
+    national_id: NationalID
     phone_number: PhoneNumber
-    birth_day: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+
+class UserWithCredential(UserFullInfo):
+    username: str
     password: HashedPassword
+
+
+class UserRegisterData(UserWithCredential):
+    password: str  # type: ignore
+
+
+class FullUser(UserWithCredential):
+    id: int
     role: UserRole
-
-
-class UserInfoL1(FullUser):
-    class Config:
-        fields = {
-            "password": {"exclude": True},
-            "id": {"exclude": True},
-            "role": {"exclude": True},
-        }
-
-
-class UserRegisterData(FullUser):
-    class Config:
-        fields = {
-            "id": {"exclude": True},
-            "role": {"exclude": True},
-        }
