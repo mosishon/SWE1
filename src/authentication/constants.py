@@ -7,4 +7,4 @@ LOGIN_ROUTE = "/login"  # After router prefix
 REGISTRATION_ROUTE = "/register"
 
 
-backend = OAuth2PasswordBearer(f"/auth/{LOGIN_ROUTE}", scheme_name="JWT")
+backend = OAuth2PasswordBearer(f"/auth{LOGIN_ROUTE}", scheme_name="JWT")

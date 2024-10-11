@@ -20,6 +20,12 @@ class CourseSectionCount(int, Enum):
     two = 2
 
 
+class Unit(int, Enum):
+    one = 1
+    two = 2
+    three = 3
+
+
 class CourseSection(BaseModel):
     week_day: DayOfWeek
     start_time: CourseSectionTime
@@ -31,6 +37,6 @@ class Course(BaseModel):
     short_name: str
     instructor: FullInstructor
     sections_count: CourseSectionCount
-    unit: int
+    unit: Unit
     importance: int
     sections: Tuple[CourseSection]

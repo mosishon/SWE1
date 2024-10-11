@@ -22,7 +22,7 @@ def verify_pwd(plain: str, hash: HashedPassword) -> bool:
 
 def create_access_token(token_data: TokenData) -> Token:
     encoded = jwt.encode(token_data.model_dump(), config.SECRET, ALGORITHM)
-    return Token(token=encoded)
+    return Token(access_token=encoded)
 
 
 async def to_async(fn, *args):

@@ -1,19 +1,20 @@
 import datetime
+from typing import Annotated
 
 import jwt
 import sqlalchemy as sa
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import ValidationError
 
-from src.authentication.constants import ALGORITHM
+from src.authentication.constants import ALGORITHM, backend
 from src.authentication.schemas import TokenData
 from src.config import config
-from src.course.schemas import CourseSection
-from src.dependencies import BackendToken, GetFullUser, SessionMaker
-from src.instructor.models import Instructor
-from src.instructor.schemas import FullInstructor
+from src.dependencies import SessionMaker
 from src.models import User
 from src.schemas import FullUser
+
+BackendToken = Annotated[str, Depends(backend)]
 
 
 async def get_current_user(maker: SessionMaker, token: BackendToken) -> FullUser:
@@ -40,33 +41,16 @@ async def get_current_user(maker: SessionMaker, token: BackendToken) -> FullUser
         )
         user = result.scalar_one_or_none()
 
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Could not find user",
-        )
-
-    return FullUser.model_validate(user)
-
-
-async def get_instructor(maker: SessionMaker, full_user: GetFullUser) -> FullInstructor:
-    async with maker.begin() as session:
-        result = await session.execute(
-            sa.select(Instructor).where(Instructor.for_user == full_user.id)
-        )
-        instructor = result.scalar_one_or_none()
-        if instructor:
-            course_sections = map(
-                CourseSection.model_validate, instructor.available_course_sections
-            )
-            return FullInstructor(
-                full_user=full_user, available_course_sections=list(course_sections)
-            )
-        else:
+        if user is None:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Could not validate credentials",
-                headers={"WWW-Authenticate": "Bearer"},
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Could not find user",
             )
 
-    return FullInstructor()
+        return FullUser.model_validate(user)
+
+
+GetFullUser = Annotated[FullUser, Depends(get_current_user)]
+
+
+OAuthLoginData = Annotated[OAuth2PasswordRequestForm, Depends()]

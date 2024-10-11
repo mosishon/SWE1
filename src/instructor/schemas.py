@@ -19,6 +19,6 @@ class FullInstructor(BaseModel):
         sections_have = len(values["available_course_sections"])
         if sections_need > sections_have:
             raise InstructorTimeIsFull("test")
-        elif values["full_user"].role != UserRole.Instructor:
+        elif values["full_user"].role != UserRole.INSTRUCTOR:
             raise UserIsNotInstructor("test")
         return cls

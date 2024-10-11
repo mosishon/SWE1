@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from src.dependencies import GetFullInstructor
+from src.instructor.dependencies import GetFullInstructor
 
 router = APIRouter()
 
