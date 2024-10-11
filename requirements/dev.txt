@@ -10,6 +10,7 @@ pre-commit
 pydantic-settings
 pydantic[email]
 pyjwt
+python-multipart
 pyupgrade
 sqlalchemy[asyncio]
 uvicorn
