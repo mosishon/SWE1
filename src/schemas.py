@@ -40,7 +40,9 @@ class UserWithCredential(UserFullInfo):
 
 
 class UserRegisterData(UserFullInfo):
-    password: str  # type: ignore
+    # password: str  # type: ignore
+    # we fill password automatic
+    pass
 
 
 class FullUser(UserWithCredential):

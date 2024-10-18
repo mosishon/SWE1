@@ -26,7 +26,9 @@ async def create_new_student(register_data: StudentRegisterData, _: GetFullAdmin
                     "username": register_data.student_id,
                     "phone_number": register_data.phone_number,
                     "birth_day": register_data.birth_day,
-                    "password": await to_async(hash_password(register_data.password)),
+                    "password": await to_async(
+                        hash_password(register_data.national_id)
+                    ),
                     "role": UserRole.STUDENT,
                 }
             )
