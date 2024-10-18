@@ -59,12 +59,12 @@ OAuthLoginData = Annotated[OAuth2PasswordRequestForm, Depends()]
 async def get_admin(maker: SessionMaker, full_user: GetFullUser) -> FullAdmin:
     async with maker.begin() as session:
         result = await session.execute(
-            sa.select(User)
+            sa.select(User.id)
             .where(User.id == full_user.id)
             .where(User.role == UserRole.ADMIN)
         )
-        admin_user = result.scalar_one_or_none()
-        if admin_user:
+        admin_user = result.first()
+        if admin_user is not None:
             return FullAdmin(full_user=full_user)
         else:
             raise HTTPException(
