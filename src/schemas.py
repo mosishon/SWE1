@@ -5,6 +5,14 @@ from pydantic import BaseModel, EmailStr, NaiveDatetime
 from src.cutsom_types import HashedPassword, NationalID, PhoneNumber
 
 
+class AddCode(enum.Enum):
+    STUDENT_ADDED = "STUDENT_ADDED"
+
+
+class AddMessage(enum.Enum):
+    STUDENT_ADDED = "Student added successfully"
+
+
 class UserRole(enum.Enum):
     ADMIN = "admin"
     STUDENT = "student"
@@ -31,10 +39,19 @@ class UserWithCredential(UserFullInfo):
     password: HashedPassword
 
 
-class UserRegisterData(UserWithCredential):
+class UserRegisterData(UserFullInfo):
     password: str  # type: ignore
 
 
 class FullUser(UserWithCredential):
     id: int
     role: UserRole
+
+
+class FullAdmin(BaseModel):
+    full_user: UserFullInfo
+
+
+class ObjectAdded(BaseModel):
+    code: AddCode
+    message: AddMessage

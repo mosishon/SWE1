@@ -12,7 +12,7 @@ from src.authentication.schemas import TokenData
 from src.config import config
 from src.dependencies import SessionMaker
 from src.models import User
-from src.schemas import FullUser
+from src.schemas import FullAdmin, FullUser, UserRole
 
 BackendToken = Annotated[str, Depends(backend)]
 
@@ -54,3 +54,24 @@ GetFullUser = Annotated[FullUser, Depends(get_current_user)]
 
 
 OAuthLoginData = Annotated[OAuth2PasswordRequestForm, Depends()]
+
+
+async def get_admin(maker: SessionMaker, full_user: GetFullUser) -> FullAdmin:
+    async with maker.begin() as session:
+        result = await session.execute(
+            sa.select(User)
+            .where(User.id == full_user.id)
+            .where(User.role == UserRole.ADMIN)
+        )
+        admin_user = result.scalar_one_or_none()
+        if admin_user:
+            return FullAdmin(full_user=full_user)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not admin",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+
+GetFullAdmin = Annotated[FullAdmin, Depends(get_admin)]

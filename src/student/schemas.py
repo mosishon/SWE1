@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 from src.cutsom_types import StudnentID
-from src.schemas import UserFullInfo, UserRegisterData
+from src.schemas import ObjectAdded, UserFullInfo, UserRegisterData
 
 
 class StudentRegisterData(UserRegisterData):
@@ -19,3 +19,7 @@ class StudentInfo(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class StudentAdded(ObjectAdded):
+    student: StudentInfo
