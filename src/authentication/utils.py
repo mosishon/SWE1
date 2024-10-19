@@ -41,7 +41,7 @@ def create_reset_password_token(email: str):
 
 def decode_reset_password_token(token: str):
     try:
-        payload = jwt.decode(token, config.FORGET_PASSWORD_SECRET, ALGORITHM)
+        payload = jwt.decode(token, config.FORGET_PASSWORD_SECRET, [ALGORITHM])
         email: str = payload.get("sub")
         return email
     except jwt.exceptions.InvalidTokenError:

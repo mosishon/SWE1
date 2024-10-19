@@ -31,5 +31,9 @@ class ResetForegetPasswordData(BaseModel):
 
 class ResetPasswordOut(BaseModel):
     success: bool
-    status_code: int
     message: str
+
+
+class ResetedSuccessful(BaseModel):
+    message: str
+    reset_link: str

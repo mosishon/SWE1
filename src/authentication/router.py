@@ -1,8 +1,7 @@
 import datetime
 
 import sqlalchemy as sa
-from fastapi import APIRouter, HTTPException, status
-from starlette.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Request, status
 
 from src.authentication.constants import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -12,6 +11,7 @@ from src.authentication.constants import (
 from src.authentication.dependencies import OAuthLoginData
 from src.authentication.schemas import (
     ForgotPasswordData,
+    ResetedSuccessful,
     ResetForegetPasswordData,
     ResetPasswordOut,
     Token,
@@ -25,7 +25,6 @@ from src.authentication.utils import (
     to_async,
     verify_pwd,
 )
-from src.config import config
 from src.dependencies import SessionMaker
 from src.models import User
 from src.schemas import UserFullInfo, UserRole
@@ -74,10 +73,10 @@ async def create_user(data: StudentRegisterData, maker: SessionMaker):
             last_name=data.last_name,
             national_id=data.national_id,
             email=data.email,
-            username=data.username,
+            username=data.student_id,
             phone_number=data.phone_number,
             birth_day=data.birth_day,
-            password=await to_async(hash_password, data.password),
+            password=await to_async(hash_password, data.national_id),
             role=UserRole.STUDENT,
         )
         session.add(user)
@@ -92,28 +91,30 @@ async def create_user(data: StudentRegisterData, maker: SessionMaker):
 
 
 # Not complete
-@router.post("/forgot-password")
-async def forget_password(data: ForgotPasswordData, maker: SessionMaker):
+@router.post("/forgot-password", response_model=ResetedSuccessful)
+async def forget_password(
+    data: ForgotPasswordData, maker: SessionMaker, request: Request
+):
     try:
         # Correct it later
-        user = maker.query(User).filter(User.email == data.email).first()
-
-        if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Invalid Email address",
+        async with maker.begin() as session:
+            result = await session.execute(
+                sa.select(User).where(User.email == data.email)
             )
+            user = result.scalar_one_or_none()
+            if user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid Email address",
+                )
 
-        reset_token = create_reset_password_token(email=user.email)
+            reset_token = await to_async(create_reset_password_token, user.email)
 
-        forget_url_link = (
-            f"{config.HOST}:{config.PORT}/{config.FORGOT_PASSWORD_URL}/{reset_token}"
-        )
-
-        return JSONResponse(
-            status_code=status.HTTP_200_OK,
-            content={"message": "Email has been sent", "link": forget_url_link},
-        )
+            # TODO send using SMTP to user.email
+            reset_link = f"https://xxxxx.xxx/xxxx/{reset_token}"  #
+            return ResetedSuccessful(
+                message="Email has been sent link", reset_link=reset_link
+            )
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -122,31 +123,29 @@ async def forget_password(data: ForgotPasswordData, maker: SessionMaker):
 
 
 # Query need to be handled
-@router.post("reset-password", response_model=ResetPasswordOut)
+@router.post("/reset-password", response_model=ResetPasswordOut)
 async def reset_password(data: ResetForegetPasswordData, maker: SessionMaker):
     try:
-        email = decode_reset_password_token(token=data.secret_token)
+        email = await to_async(decode_reset_password_token, data.secret_token)
         if email is None:
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid Password Reset Payload or Reset Link Expired",
             )
         if data.new_password != data.confirm_password:
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="New password and confirm password are not same.",
             )
 
-        # hashed_password = hash_password(data.new_password)
-        # user = db.query(User).filter(User.email == email).first()
-        # user.password = hashed_password
-        # db.add(user)
-        # db.commit()
-        return {
-            "success": True,
-            "status_code": status.HTTP_200_OK,
-            "message": "Password Rest Successfully!",
-        }
+        hashed_password = await to_async(hash_password, data.new_password)
+        async with maker.begin() as session:
+            await session.execute(
+                sa.update(User)
+                .where(User.email == email)
+                .values({"password": hashed_password})
+            )
+        return ResetPasswordOut(success=True, message="Password Rest Successfully!")
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
