@@ -121,7 +121,8 @@ async def forget_password(data: ForgotPasswordData, maker: SessionMaker):
         )
 
 
-@router.post("/reset-password", response_model=ResetPasswordOut)
+# Query need to be handled
+@router.post("reset-password", response_model=ResetPasswordOut)
 async def reset_password(data: ResetForegetPasswordData, maker: SessionMaker):
     try:
         email = decode_reset_password_token(token=data.secret_token)
