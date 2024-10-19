@@ -10,10 +10,17 @@ from src.authentication.constants import (
     REGISTRATION_ROUTE,
 )
 from src.authentication.dependencies import OAuthLoginData
-from src.authentication.schemas import ForgotPasswordData, Token, TokenData
+from src.authentication.schemas import (
+    ForgotPasswordData,
+    ResetForegetPasswordData,
+    ResetPasswordOut,
+    Token,
+    TokenData,
+)
 from src.authentication.utils import (
     create_access_token,
     create_reset_password_token,
+    decode_reset_password_token,
     hash_password,
     to_async,
     verify_pwd,
@@ -111,4 +118,36 @@ async def forget_password(data: ForgotPasswordData, maker: SessionMaker):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Something Unexpected, Server Error",
+        )
+
+
+@router.post("/reset-password", response_model=ResetPasswordOut)
+async def reset_password(data: ResetForegetPasswordData, maker: SessionMaker):
+    try:
+        email = decode_reset_password_token(token=data.secret_token)
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Invalid Password Reset Payload or Reset Link Expired",
+            )
+        if data.new_password != data.confirm_password:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="New password and confirm password are not same.",
+            )
+
+        # hashed_password = hash_password(data.new_password)
+        # user = db.query(User).filter(User.email == email).first()
+        # user.password = hashed_password
+        # db.add(user)
+        # db.commit()
+        return {
+            "success": True,
+            "status_code": status.HTTP_200_OK,
+            "message": "Password Rest Successfully!",
+        }
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Something unexpected happened!",
         )

@@ -35,11 +35,14 @@ def create_reset_password_token(email: str):
         "sub": email,
         "exp": datetime.utcnow() + timedelta(minutes=RESET_PASSWORD_EXP_TIME),
     }
-    token = jwt.encode(data, config.SECRET, ALGORITHM)
+    token = jwt.encode(data, config.FORGET_PASSWORD_SECRET, ALGORITHM)
     return token
 
 
 def decode_reset_password_token(token: str):
-    payload = jwt.decode(token, config.SECRET, ALGORITHM)
-    email: str = payload.get("sub")
-    return email
+    try:
+        payload = jwt.decode(token, config.FORGET_PASSWORD_SECRET, ALGORITHM)
+        email: str = payload.get("sub")
+        return email
+    except jwt.exceptions.InvalidTokenError:
+        return None
