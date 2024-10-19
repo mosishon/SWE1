@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     postgres_db: str
     HOST: str
     PORT: int
+    FORGOT_PASSWORD_URL: str
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
     MAIL_FROM: str

@@ -2,6 +2,7 @@ import datetime
 
 import sqlalchemy as sa
 from fastapi import APIRouter, HTTPException, status
+from starlette.responses import JSONResponse
 
 from src.authentication.constants import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -9,13 +10,15 @@ from src.authentication.constants import (
     REGISTRATION_ROUTE,
 )
 from src.authentication.dependencies import OAuthLoginData
-from src.authentication.schemas import Token, TokenData
+from src.authentication.schemas import ForgotPasswordData, Token, TokenData
 from src.authentication.utils import (
     create_access_token,
+    create_reset_password_token,
     hash_password,
     to_async,
     verify_pwd,
 )
+from src.config import config
 from src.dependencies import SessionMaker
 from src.models import User
 from src.schemas import UserFullInfo, UserRole
@@ -78,4 +81,34 @@ async def create_user(data: StudentRegisterData, maker: SessionMaker):
         session.add(student)
         return StudentInfo(
             user=UserFullInfo.model_validate(user), student_id=data.student_id
+        )
+
+
+# Not complete
+@router.post("/forgot-password")
+async def forget_password(data: ForgotPasswordData, maker: SessionMaker):
+    try:
+        # Correct it later
+        user = maker.query(User).filter(User.email == data.email).first()
+
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Invalid Email address",
+            )
+
+        reset_token = create_reset_password_token(email=user.email)
+
+        forget_url_link = (
+            f"{config.HOST}:{config.PORT}/{config.FORGOT_PASSWORD_URL}/{reset_token}"
+        )
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"message": "Email has been sent", "link": forget_url_link},
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Something Unexpected, Server Error",
         )

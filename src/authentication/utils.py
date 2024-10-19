@@ -1,9 +1,10 @@
 import asyncio
+from datetime import datetime, timedelta
 
 import jwt
 from passlib.context import CryptContext
 
-from src.authentication.constants import ALGORITHM
+from src.authentication.constants import ALGORITHM, RESET_PASSWORD_EXP_TIME
 from src.authentication.schemas import Token, TokenData
 from src.config import config
 from src.cutsom_types import HashedPassword
@@ -27,3 +28,12 @@ def create_access_token(token_data: TokenData) -> Token:
 
 async def to_async(fn, *args):
     return await asyncio.get_event_loop().run_in_executor(None, fn, *args)
+
+
+def create_reset_password_token(email: str):
+    data = {
+        "sub": email,
+        "exp": datetime.utcnow() + timedelta(minutes=RESET_PASSWORD_EXP_TIME),
+    }
+    token = jwt.encode(data, config.SECRET, ALGORITHM)
+    return token
