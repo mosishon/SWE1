@@ -37,3 +37,9 @@ def create_reset_password_token(email: str):
     }
     token = jwt.encode(data, config.SECRET, ALGORITHM)
     return token
+
+
+def decode_reset_password_token(token: str):
+    payload = jwt.decode(token, config.SECRET, ALGORITHM)
+    email: str = payload.get("sub")
+    return email
