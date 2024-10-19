@@ -9,8 +9,16 @@ class AddCode(enum.Enum):
     STUDENT_ADDED = "STUDENT_ADDED"
 
 
+class DeleteCode(enum.Enum):
+    STUDENT_DELETED = "STUDENT_DELETED"
+
+
 class AddMessage(enum.Enum):
     STUDENT_ADDED = "Student added successfully"
+
+
+class DeleteMessage(enum.Enum):
+    STUDENT_DELETED = "Student deleted successfully"
 
 
 class UserRole(enum.Enum):
@@ -57,3 +65,8 @@ class FullAdmin(BaseModel):
 class ObjectAdded(BaseModel):
     code: AddCode
     message: AddMessage
+
+
+class ObjectDeleted(BaseModel):
+    code: DeleteCode
+    message: DeleteMessage

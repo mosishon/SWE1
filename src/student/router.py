@@ -5,9 +5,22 @@ from src.authentication.dependencies import GetFullAdmin
 from src.authentication.utils import hash_password, to_async
 from src.database import get_session_maker
 from src.models import User
-from src.schemas import AddCode, AddMessage, UserFullInfo, UserRole
+from src.schemas import (
+    AddCode,
+    AddMessage,
+    DeleteCode,
+    DeleteMessage,
+    UserFullInfo,
+    UserRole,
+)
 from src.student.models import Student
-from src.student.schemas import StudentAdded, StudentInfo, StudentRegisterData
+from src.student.schemas import (
+    StudentAdded,
+    StudentDeleted,
+    StudentDeleteIn,
+    StudentInfo,
+    StudentRegisterData,
+)
 
 router = APIRouter()
 
@@ -56,3 +69,29 @@ async def create_new_student(register_data: StudentRegisterData, _: GetFullAdmin
                 message=AddMessage.STUDENT_ADDED,
                 student=StudentInfo(user=fu, student_id=register_data.student_id),
             )
+
+
+@router.post("/delete-student", response_model=StudentAdded)
+async def delete_student(data: StudentDeleteIn, _: GetFullAdmin):
+    async with get_session_maker().begin() as session:
+        stu = await session.execute(
+            sa.select(Student.for_user).where(Student.student_id == data.student_id)
+        )
+        stu = stu.scalar_one_or_none()
+        if stu:
+            user = await session.execute(sa.select(User).where(User.id == stu))
+            user = user.scalar_one_or_none()
+            if not user:
+                return {}  # TODO return error
+            await session.execute(
+                sa.delete(Student).where(Student.student_id == data.student_id)
+            )
+            await session.execute(sa.delete(User).where(User.id == stu))
+            fu = UserFullInfo.model_validate(user)
+            return StudentDeleted(
+                code=DeleteCode.STUDENT_DELETED,
+                message=DeleteMessage.STUDENT_DELETED,
+                student=StudentInfo(user=fu, student_id=data.student_id),
+            )
+        else:
+            return {}  # TODO return error
