@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 from src.cutsom_types import HashedPassword, TimeStamp
 
@@ -17,3 +17,7 @@ class Token(BaseModel):
 class LoginData(BaseModel):
     username: str
     password: HashedPassword
+
+
+class ForgotPasswordData(BaseModel):
+    email: EmailStr
