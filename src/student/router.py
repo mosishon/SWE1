@@ -12,7 +12,7 @@ from src.student.schemas import StudentAdded, StudentInfo, StudentRegisterData
 router = APIRouter()
 
 
-@router.get("/new-student")
+@router.post("/new-student", response_model=StudentAdded)
 async def create_new_student(register_data: StudentRegisterData, _: GetFullAdmin):
     async with get_session_maker().begin() as session:
         user = await session.execute(

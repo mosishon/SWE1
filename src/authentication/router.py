@@ -28,7 +28,6 @@ from src.authentication.utils import (
 from src.dependencies import SessionMaker
 from src.models import User
 from src.schemas import UserFullInfo, UserRole
-from src.student.models import Student
 from src.student.schemas import StudentInfo, StudentRegisterData
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -67,7 +66,7 @@ async def login(data: OAuthLoginData, maker: SessionMaker):
     REGISTRATION_ROUTE, status_code=status.HTTP_201_CREATED, response_model=StudentInfo
 )
 async def create_user(data: StudentRegisterData, maker: SessionMaker):
-    async with maker.begin() as session:
+    async with maker.begin() as _:
         user = User(
             first_name=data.first_name,
             last_name=data.last_name,
@@ -79,12 +78,16 @@ async def create_user(data: StudentRegisterData, maker: SessionMaker):
             password=await to_async(hash_password, data.national_id),
             role=UserRole.STUDENT,
         )
-        session.add(user)
-        await session.flush()
-        student = Student()
-        student.for_user = user.id
-        student.student_id = data.student_id
-        session.add(student)
+
+        # TODO request should send to admin for accept
+
+        # session.add(user)
+        # await session.flush()
+        # student = Student()
+        # student.for_user = user.id
+        # student.student_id = data.student_id
+        # session.add(student)
+
         return StudentInfo(
             user=UserFullInfo.model_validate(user), student_id=data.student_id
         )
