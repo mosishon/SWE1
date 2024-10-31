@@ -40,3 +40,12 @@ class Course(BaseModel):
     unit: Unit
     importance: int
     sections: Tuple[CourseSection]
+
+
+class AddCourseIn(BaseModel):
+    course_name: str
+    course_id: int
+
+
+class AddCourseOut(BaseModel):
+    course_name: str
