@@ -1,8 +1,9 @@
 import sqlalchemy as sa
 from fastapi import APIRouter
 
-from src.authentication.dependencies import GetFullAdmin
+from src.authentication.dependencies import GetFullAdmin, GetFullUser
 from src.authentication.utils import hash_password, to_async
+from src.course.schemas import AddCourseIn, AddCourseOut
 from src.database import get_session_maker
 from src.models import User
 from src.schemas import (
@@ -13,7 +14,7 @@ from src.schemas import (
     UserFullInfo,
     UserRole,
 )
-from src.student.models import Student
+from src.student.models import Student, Student_Course
 from src.student.schemas import (
     StudentAdded,
     StudentDeleted,
@@ -95,3 +96,20 @@ async def delete_student(data: StudentDeleteIn, _: GetFullAdmin):
             )
         else:
             return {}  # TODO return error
+
+
+@router.post("/add-course", response_model=AddCourseOut)
+async def add_course(data: AddCourseIn, user: GetFullUser):
+    async with get_session_maker().begin() as session:
+        student_id = await session.execute(
+            sa.select(Student.student_id).where(Student.for_user == user.id)
+        )
+        query = sa.insert(Student_Course).values(
+            {
+                Student_Course.course_id: data.course_id,
+                Student_Course.student_id: student_id,
+            }
+        )
+        await session.execute(query)
+
+    return AddCourseOut(course_name=data.course_name)
