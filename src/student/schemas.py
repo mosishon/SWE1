@@ -31,3 +31,12 @@ class StudentAdded(ObjectAdded):
 
 class StudentDeleted(ObjectDeleted):
     student: StudentInfo
+
+
+class AddCourseIn(BaseModel):
+    course_name: str
+    course_id: int
+
+
+class AddCourseOut(BaseModel):
+    course_name: str

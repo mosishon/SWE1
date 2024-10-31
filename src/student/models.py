@@ -14,3 +14,14 @@ class Student(BaseModel):
     for_user: Mapped[int] = mapped_column(
         ForeignKey("user.id"), index=True, nullable=False
     )
+
+
+class Student_Course(BaseModel):
+    __tablename__ = "student_course"
+
+    student_id: Mapped[StudnentID] = mapped_column(
+        ForeignKey("student.student_id"), primary_key=True, nullable=False
+    )
+    course_id: Mapped[int] = mapped_column(
+        ForeignKey("course.id"), primary_key=True, nullable=False
+    )
