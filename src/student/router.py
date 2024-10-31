@@ -3,6 +3,7 @@ from fastapi import APIRouter
 
 from src.authentication.dependencies import GetFullAdmin, GetFullUser
 from src.authentication.utils import hash_password, to_async
+from src.course.models import Course
 from src.course.schemas import AddCourseIn, AddCourseOut
 from src.database import get_session_maker
 from src.models import User
@@ -113,3 +114,19 @@ async def add_course(data: AddCourseIn, user: GetFullUser):
         await session.execute(query)
 
     return AddCourseOut(course_name=data.course_name)
+
+
+@router.get("/reserved-course")
+async def get_reserved_course(user: GetFullUser):
+    async with get_session_maker().begin() as session:
+        student_id = await session.execute(
+            sa.select(Student.student_id).where(Student.for_user == user.id)
+        )
+        query = (
+            sa.select(Course.name, Course.unit)
+            .join(Student_Course)
+            .where(Student_Course.student_id == student_id)
+        )
+        result = await session.execute(query)
+
+        return result
