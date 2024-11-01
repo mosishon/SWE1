@@ -16,7 +16,7 @@ class Student(BaseModel):
     )
 
 
-class Student_Course(BaseModel):
+class StudentCourse(BaseModel):
     __tablename__ = "student_course"
 
     student_id: Mapped[StudnentID] = mapped_column(

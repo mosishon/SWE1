@@ -1,7 +1,14 @@
 from pydantic import BaseModel
 
 from src.cutsom_types import StudnentID
-from src.schemas import ObjectAdded, ObjectDeleted, UserFullInfo, UserRegisterData
+from src.schemas import (
+    ErrorCode,
+    FullUser,
+    ObjectAdded,
+    ObjectDeleted,
+    UserFullInfo,
+    UserRegisterData,
+)
 
 
 class StudentRegisterData(UserRegisterData):
@@ -13,7 +20,7 @@ class StudentDeleteIn(BaseModel):
 
 
 class FullStudent(BaseModel):
-    user: UserFullInfo
+    full_user: FullUser
     student_id: StudnentID
 
 
@@ -31,3 +38,8 @@ class StudentAdded(ObjectAdded):
 
 class StudentDeleted(ObjectDeleted):
     student: StudentInfo
+
+
+class StudentNotFound(BaseModel):
+    code: ErrorCode = ErrorCode.STUDENT_NOT_FOUND
+    details: str

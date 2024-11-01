@@ -1,10 +1,10 @@
 import sqlalchemy as sa
 from fastapi import APIRouter
 
-from src.authentication.dependencies import GetFullAdmin, GetFullUser
+from src.authentication.dependencies import GetFullAdmin
 from src.authentication.utils import hash_password, to_async
 from src.course.models import Course
-from src.course.schemas import AddCourseIn, AddCourseOut
+from src.course.schemas import AddCourseIn, AddCourseOut, CourseNotFound
 from src.database import get_session_maker
 from src.models import User
 from src.schemas import (
@@ -15,12 +15,14 @@ from src.schemas import (
     UserFullInfo,
     UserRole,
 )
-from src.student.models import Student, Student_Course
+from src.student.dependencies import GetFullStudent
+from src.student.models import Student, StudentCourse
 from src.student.schemas import (
     StudentAdded,
     StudentDeleted,
     StudentDeleteIn,
     StudentInfo,
+    StudentNotFound,
     StudentRegisterData,
 )
 
@@ -99,34 +101,42 @@ async def delete_student(data: StudentDeleteIn, _: GetFullAdmin):
             return {}  # TODO return error
 
 
-@router.post("/add-course", response_model=AddCourseOut)
-async def add_course(data: AddCourseIn, user: GetFullUser):
+@router.post(
+    "/reserve-course",
+    response_model=AddCourseOut,
+    responses={404: {"model": CourseNotFound}},
+)
+async def reserve_course(data: AddCourseIn, student: GetFullStudent):
     async with get_session_maker().begin() as session:
-        student_id = await session.execute(
-            sa.select(Student.student_id).where(Student.for_user == user.id)
+        student_id = student.student_id
+        check_result = await session.execute(
+            sa.select(Course).where(Course.id == data.course_id)
         )
-        query = sa.insert(Student_Course).values(
+        course = check_result.scalar_one_or_none()
+        if not course:
+            return CourseNotFound(details="course not found."), 404
+        query = sa.insert(StudentCourse).values(
             {
-                Student_Course.course_id: data.course_id,
-                Student_Course.student_id: student_id,
+                StudentCourse.course_id: data.course_id,
+                StudentCourse.student_id: student_id,
             }
         )
         await session.execute(query)
+        return AddCourseOut(course_name=course.name)
 
-    return AddCourseOut(course_name=data.course_name)
 
-
-@router.get("/reserved-course")
-async def get_reserved_course(user: GetFullUser):
+@router.get(
+    "/reserved-course",
+)
+async def get_reserved_course(student: GetFullStudent):
     async with get_session_maker().begin() as session:
-        student_id = await session.execute(
-            sa.select(Student.student_id).where(Student.for_user == user.id)
-        )
+        student_id = student.student_id
         query = (
             sa.select(Course.name, Course.unit)
-            .join(Student_Course)
-            .where(Student_Course.student_id == student_id)
+            .join(StudentCourse)
+            .where(StudentCourse.student_id == student_id)
         )
         result = await session.execute(query)
-
-        return result
+        _ = result.scalars().all()
+        # Todo need check response
+        return StudentNotFound(details="Student not found"), 404

@@ -5,6 +5,7 @@ from typing import NewType, Tuple
 from pydantic import BaseModel
 
 from src.instructor.schemas import FullInstructor
+from src.schemas import ErrorCode
 
 CourseSectionTime = NewType("CourseSectionTime", datetime.time)
 
@@ -43,9 +44,13 @@ class Course(BaseModel):
 
 
 class AddCourseIn(BaseModel):
-    course_name: str
     course_id: int
 
 
 class AddCourseOut(BaseModel):
     course_name: str
+
+
+class CourseNotFound(BaseModel):
+    code: ErrorCode = ErrorCode.COURSE_NOT_FOUND
+    details: str

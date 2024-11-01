@@ -27,6 +27,11 @@ class UserRole(enum.Enum):
     INSTRUCTOR = "instructor"
 
 
+class ErrorCode(enum.Enum):
+    COURSE_NOT_FOUND = "COURSE_NOT_FOUND"
+    STUDENT_NOT_FOUND = "STUDENT_NOT_FOUND"
+
+
 class BaseUser(BaseModel):
     first_name: str
     last_name: str
