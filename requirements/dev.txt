@@ -1,11 +1,12 @@
 alembic
 asyncpg
+bcrypt==4.0.1
 black
 fastapi
 flake8
 isort
 mypy
-passlib[bcrypt]
+passlib
 pre-commit
 pydantic-settings
 pydantic[email]
