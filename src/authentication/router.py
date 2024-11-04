@@ -2,6 +2,8 @@ import datetime
 
 import sqlalchemy as sa
 from fastapi import APIRouter, HTTPException, Request, status
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 
 from src.authentication.constants import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -28,7 +30,8 @@ from src.authentication.utils import (
 from src.dependencies import SessionMaker
 from src.models import User
 from src.schemas import UserFullInfo, UserRole
-from src.student.schemas import StudentInfo, StudentRegisterData
+from src.student.models import Student
+from src.student.schemas import StudentDuplicate, StudentInfo, StudentRegisterData
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -44,6 +47,7 @@ async def login(data: OAuthLoginData, maker: SessionMaker):
             sa.select(User.id, User.password).where(User.username == data.username)
         )
         row = result.first()
+        print(row)
         if row and await to_async(verify_pwd, data.password, row[1]):
             user_data = {
                 "user_id": row[0],
@@ -63,10 +67,12 @@ async def login(data: OAuthLoginData, maker: SessionMaker):
 
 # TODO error handling
 @router.post(
-    REGISTRATION_ROUTE, status_code=status.HTTP_201_CREATED, response_model=StudentInfo
+    REGISTRATION_ROUTE,
+    response_model=StudentInfo,
+    responses={400: {"model": StudentDuplicate}},
 )
 async def create_user(data: StudentRegisterData, maker: SessionMaker):
-    async with maker.begin() as _:
+    async with maker.begin() as session:
         user = User(
             first_name=data.first_name,
             last_name=data.last_name,
@@ -80,13 +86,28 @@ async def create_user(data: StudentRegisterData, maker: SessionMaker):
         )
 
         # TODO request should send to admin for accept
+        try:
+            session.add(user)
+            await session.flush()
+            student = Student()
+            student.for_user = user.id
+            student.student_id = data.student_id
+            session.add(student)
+        except IntegrityError as error:
+            duplicate_field = None
+            if "unique constraint" in str(error.orig):
+                # Check for a specific constraint name or field in the error message
+                if "user_email_key" in str(error.orig):
+                    duplicate_field = "email"
+                elif "user_username_key" in str(error.orig):
+                    duplicate_field = "username"
 
-        # session.add(user)
-        # await session.flush()
-        # student = Student()
-        # student.for_user = user.id
-        # student.student_id = data.student_id
-        # session.add(student)
+            # Customize the response message based on the duplicate field
+            if duplicate_field:
+                message = f"The {duplicate_field} provided is already in use."
+            else:
+                message = "Duplicate entry detected."
+            return JSONResponse(StudentDuplicate(details=message).model_dump(), 400)
 
         return StudentInfo(
             user=UserFullInfo.model_validate(user), student_id=data.student_id

@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import BigInteger, DateTime, Enum, String
+from sqlalchemy import DateTime, Enum, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from src.cutsom_types import HashedPassword, NationalID, PhoneNumber, StudnentID
@@ -9,9 +9,9 @@ from src.schemas import UserRole
 
 class BaseModel(DeclarativeBase):
     type_annotation_map = {
-        StudnentID: BigInteger(),
-        NationalID: BigInteger(),
-        PhoneNumber: BigInteger(),
+        StudnentID: String(),
+        NationalID: String(),
+        PhoneNumber: String(),
         HashedPassword: String(),
     }
 

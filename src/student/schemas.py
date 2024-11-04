@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 from src.cutsom_types import StudnentID
@@ -41,5 +43,10 @@ class StudentDeleted(ObjectDeleted):
 
 
 class StudentNotFound(BaseModel):
-    code: ErrorCode = ErrorCode.STUDENT_NOT_FOUND
+    code: Literal[ErrorCode.STUDENT_NOT_FOUND] = ErrorCode.STUDENT_NOT_FOUND
+    details: str
+
+
+class StudentDuplicate(BaseModel):
+    code: ErrorCode = ErrorCode.STUDENT_DUPLICATE
     details: str
