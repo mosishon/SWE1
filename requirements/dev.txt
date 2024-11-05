@@ -14,3 +14,4 @@ python-multipart
 pyupgrade
 sqlalchemy[asyncio]
 uvicorn
+fastapi-mail
