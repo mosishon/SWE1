@@ -36,4 +36,3 @@ class ResetPasswordOut(BaseModel):
 
 class ResetedSuccessful(BaseModel):
     message: str
-    reset_link: str

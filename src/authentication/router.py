@@ -148,9 +148,7 @@ async def forget_password(
 
             fm = FastMail(mail_conf)
             await fm.send_message(message)
-            return ResetedSuccessful(
-                message="Email has been sent", reset_link=reset_link
-            )
+            return ResetedSuccessful(message="Email has been sent")
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
