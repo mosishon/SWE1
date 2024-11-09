@@ -8,6 +8,7 @@ load_dotenv(override=True)
 class Settings(BaseSettings):
     SECRET: str = Field()
     FORGET_PASSWORD_SECRET: str
+    FORGET_PASSWORD_LINK_EXPIRE_MINUTES: int
     postgres_host: str
     postgres_port: int
     postgres_user: str

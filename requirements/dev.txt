@@ -3,6 +3,7 @@ asyncpg
 bcrypt==4.0.1
 black
 fastapi
+fastapi-mail
 flake8
 isort
 mypy

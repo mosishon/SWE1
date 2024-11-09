@@ -3,8 +3,10 @@ import datetime
 import sqlalchemy as sa
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import JSONResponse
+from fastapi_mail import FastMail, MessageSchema, MessageType
 from sqlalchemy.exc import IntegrityError
 
+from src.authentication.config import mail_conf
 from src.authentication.constants import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     LOGIN_ROUTE,
@@ -27,6 +29,7 @@ from src.authentication.utils import (
     to_async,
     verify_pwd,
 )
+from src.config import config
 from src.dependencies import SessionMaker
 from src.models import User
 from src.schemas import UserFullInfo, UserRole
@@ -120,7 +123,6 @@ async def forget_password(
     data: ForgotPasswordData, maker: SessionMaker, request: Request
 ):
     try:
-        # Correct it later
         async with maker.begin() as session:
             result = await session.execute(
                 sa.select(User).where(User.email == data.email)
@@ -132,12 +134,22 @@ async def forget_password(
                     detail="Invalid Email address",
                 )
 
-            reset_token = await to_async(create_reset_password_token, user.email)
+            reset_token = await to_async(create_reset_password_token, data.email)
 
-            # TODO send using SMTP to user.email
-            reset_link = f"https://xxxxx.xxx/xxxx/{reset_token}"  #
+            reset_link = f"https://{config.HOST}:{config.PORT}./{config.FORGOT_PASSWORD_URL}/{reset_token}"
+            html = f"<p>{reset_link}</p>"
+
+            message = MessageSchema(
+                subject="Reset password instructions",
+                recipients=[user.email],
+                body=html,
+                subtype=MessageType.html,
+            )
+
+            fm = FastMail(mail_conf)
+            await fm.send_message(message)
             return ResetedSuccessful(
-                message="Email has been sent link", reset_link=reset_link
+                message="Email has been sent", reset_link=reset_link
             )
     except Exception:
         raise HTTPException(
@@ -146,7 +158,6 @@ async def forget_password(
         )
 
 
-# Query need to be handled
 @router.post("/reset-password", response_model=ResetPasswordOut)
 async def reset_password(data: ResetForegetPasswordData, maker: SessionMaker):
     try:
