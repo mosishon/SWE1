@@ -42,8 +42,6 @@ def is_valid_iran_code(input: str) -> bool:
 
 
 class AddInstructorIn(BaseModel):
-    code: Literal[SuccessCodes.INSTRUCTOR_ADDED] = SuccessCodes.INSTRUCTOR_ADDED
-    message: Literal[Messages.INSTRUCTOR_ADDED] = Messages.INSTRUCTOR_ADDED
     first_name: str
     last_name: str
     national_id: NationalID
@@ -67,5 +65,7 @@ class AddInstructorIn(BaseModel):
 
 
 class InstructorCreated(BaseModel):
+    code: Literal[SuccessCodes.INSTRUCTOR_ADDED] = SuccessCodes.INSTRUCTOR_ADDED
+    message: Literal[Messages.INSTRUCTOR_ADDED] = Messages.INSTRUCTOR_ADDED
     instuctor_id: int
     user_data: UserFullInfo
