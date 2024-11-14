@@ -1,5 +1,5 @@
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import (
     BaseModel,
@@ -12,7 +12,7 @@ from pydantic import (
 
 from src.cutsom_types import NationalID
 from src.instructor.exceptions import InstructorTimeIsFull, UserIsNotInstructor
-from src.schemas import FullUser, UserFullInfo, UserRole
+from src.schemas import FullUser, Messages, SuccessCodes, UserFullInfo, UserRole
 
 if TYPE_CHECKING:
     from src.course.schemas import CourseSection
@@ -42,6 +42,8 @@ def is_valid_iran_code(input: str) -> bool:
 
 
 class AddInstructorIn(BaseModel):
+    code: Literal[SuccessCodes.INSTRUCTOR_ADDED] = SuccessCodes.INSTRUCTOR_ADDED
+    message: Literal[Messages.INSTRUCTOR_ADDED] = Messages.INSTRUCTOR_ADDED
     first_name: str
     last_name: str
     national_id: NationalID

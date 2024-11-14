@@ -10,10 +10,12 @@ class SuccessCodes(str, enum.Enum):
     STUDENT_DELETED = "STUDENT_DELETED"
     PASSWORD_RESETED = "PASSWORD_RESETED"
     SECTION_ADDED = "SECTION_ADDED"
+    INSTRUCTOR_ADDED = "INSTRUCTOR_ADDED"
 
 
 class Messages(str, enum.Enum):
     STUDENT_ADDED = "Student added successfully"
+    INSTRUCTOR_ADDED = "Instructor added successfully"
     STUDENT_DELETED = "Student deleted successfully"
     SECTION_ADDED = "Section added successfully"
 
