@@ -18,7 +18,7 @@ class BaseModel(DeclarativeBase):
 
 class User(BaseModel):
     __tablename__ = "user"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
+    id: Mapped[int] = mapped_column(autoincrement=True, unique=True)
     first_name: Mapped[str] = mapped_column()
     last_name: Mapped[str] = mapped_column()
     national_id: Mapped[NationalID] = mapped_column(
@@ -28,7 +28,7 @@ class User(BaseModel):
     username: Mapped[str] = mapped_column(index=True, unique=True)
     phone_number: Mapped[PhoneNumber] = mapped_column(unique=True)
     birth_day: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=False))
-    password: Mapped[HashedPassword] = mapped_column()
+    password: Mapped[HashedPassword] = mapped_column(nullable=False)
     role: Mapped[str] = mapped_column(
         Enum(UserRole, name="userrole", create_type=True), nullable=False
     )

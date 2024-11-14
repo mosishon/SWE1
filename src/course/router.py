@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from sqlalchemy import func, insert, select
 
 from src.authentication.dependencies import GetFullAdmin
@@ -11,7 +11,12 @@ from src.exceptions import GlobalException
 router = APIRouter(prefix="/course", tags=["Courses"])
 
 
-@router.put("/new-section", responses={400: {"model": SectionExists}})
+@router.put(
+    "/new-section",
+    status_code=status.HTTP_201_CREATED,
+    responses={400: {"model": SectionExists}, 201: {"model": SectionCreated}},
+    tags=["ByAdmin"],
+)
 async def new_course(data: AddSectionIn, maker: SessionMaker, _: GetFullAdmin):
     async with maker.begin() as session:
         query = (

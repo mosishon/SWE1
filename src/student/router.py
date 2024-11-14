@@ -24,7 +24,7 @@ from src.student.schemas import (
 router = APIRouter()
 
 
-@router.post("/new-student", response_model=StudentAdded)
+@router.post("/new-student", response_model=StudentAdded, tags=["ByAdmin"])
 async def create_new_student(register_data: StudentRegisterData, _: GetFullAdmin):
     async with get_session_maker().begin() as session:
         user = await session.execute(
