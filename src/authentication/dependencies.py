@@ -8,9 +8,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import ValidationError
 
 from src.authentication.constants import ALGORITHM, backend
+from src.authentication.exceptions import NoAccess
 from src.authentication.schemas import TokenData
 from src.config import config
 from src.dependencies import SessionMaker
+from src.exceptions import GlobalException
 from src.models import User
 from src.schemas import FullAdmin, FullUser, UserRole
 
@@ -67,11 +69,7 @@ async def get_admin(maker: SessionMaker, full_user: GetFullUser) -> FullAdmin:
         if admin_user is not None:
             return FullAdmin(full_user=full_user)
         else:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You are not admin",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            raise GlobalException(NoAccess(), status.HTTP_403_FORBIDDEN)
 
 
 GetFullAdmin = Annotated[FullAdmin, Depends(get_admin)]

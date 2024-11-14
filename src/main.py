@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.authentication.router import router as auth_router
+from src.course.router import router as course_router
 from src.exceptions import GlobalException
 from src.instructor.router import router as instructor_router
 from src.student.router import router as student_router
@@ -31,3 +32,4 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(instructor_router)
 app.include_router(student_router)
+app.include_router(course_router)

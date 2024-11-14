@@ -20,3 +20,10 @@ class PasswordsDoseNotMatch(BaseError):
     details: Literal[
         "New password and confirm password are not same."
     ] = "New password and confirm password are not same."
+
+
+class NoAccess(BaseError):
+    code: Literal[ErrorCode.ACCESS_DENIED] = ErrorCode.ACCESS_DENIED
+    details: Literal[
+        "You don't have access to request this route"
+    ] = "You don't have access to request this route"
