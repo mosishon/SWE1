@@ -1,42 +1,41 @@
 import enum
 
-from pydantic import BaseModel, EmailStr, NaiveDatetime
+from pydantic import BaseModel, EmailStr, PastDate
 
 from src.cutsom_types import HashedPassword, NationalID, PhoneNumber
 
 
-class AddCode(enum.Enum):
+class SuccessCodes(str, enum.Enum):
     STUDENT_ADDED = "STUDENT_ADDED"
-
-
-class DeleteCode(enum.Enum):
     STUDENT_DELETED = "STUDENT_DELETED"
+    PASSWORD_RESETED = "PASSWORD_RESETED"
 
 
-class AddMessage(enum.Enum):
+class Messages(str, enum.Enum):
     STUDENT_ADDED = "Student added successfully"
-
-
-class DeleteMessage(enum.Enum):
     STUDENT_DELETED = "Student deleted successfully"
 
 
 class UserRole(enum.Enum):
-    ADMIN = "admin"
-    STUDENT = "student"
-    INSTRUCTOR = "instructor"
+    ADMIN = "ADMIN"
+    STUDENT = "STUDENT"
+    INSTRUCTOR = "INSTRUCTOR"
 
 
 class ErrorCode(str, enum.Enum):
     COURSE_NOT_FOUND = "COURSE_NOT_FOUND"
     STUDENT_NOT_FOUND = "STUDENT_NOT_FOUND"
     STUDENT_DUPLICATE = "STUDENT_DUPLICATE"
+    INVALID_EMAIL = "INVALID_EMAIL"
+    UNKNOWN_ERROR = "UNKNOWN_ERROR"
+    INVALID_RESET_LINK = "INVALID_RESET_LINK"
+    PASSWORDS_NOT_SAME = "PASSWORDS_NOT_SAME"
 
 
 class BaseUser(BaseModel):
     first_name: str
     last_name: str
-    birth_day: NaiveDatetime
+    birth_day: PastDate
 
 
 class UserFullInfo(BaseUser):
@@ -69,10 +68,15 @@ class FullAdmin(BaseModel):
 
 
 class ObjectAdded(BaseModel):
-    code: AddCode
-    message: AddMessage
+    code: SuccessCodes
+    message: Messages
 
 
 class ObjectDeleted(BaseModel):
-    code: DeleteCode
-    message: DeleteMessage
+    code: SuccessCodes
+    message: Messages
+
+
+class BaseError(BaseModel):
+    code: ErrorCode
+    details: str

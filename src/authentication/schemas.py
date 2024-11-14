@@ -1,6 +1,9 @@
+from typing import Literal
+
 from pydantic import BaseModel, EmailStr
 
 from src.cutsom_types import HashedPassword, TimeStamp
+from src.schemas import SuccessCodes
 
 
 # NOT FULL VERSION
@@ -30,9 +33,9 @@ class ResetForegetPasswordData(BaseModel):
 
 
 class ResetPasswordOut(BaseModel):
-    success: bool
-    message: str
+    code: Literal[SuccessCodes.PASSWORD_RESETED] = SuccessCodes.PASSWORD_RESETED
+    message: Literal["Password Rest Successfully!"] = "Password Rest Successfully!"
 
 
 class ResetedSuccessful(BaseModel):
-    message: str
+    message: Literal["Email has been sent"]

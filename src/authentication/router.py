@@ -1,4 +1,5 @@
 import datetime
+from typing import Union
 
 import sqlalchemy as sa
 from fastapi import APIRouter, HTTPException, Request, status
@@ -13,6 +14,11 @@ from src.authentication.constants import (
     REGISTRATION_ROUTE,
 )
 from src.authentication.dependencies import OAuthLoginData
+from src.authentication.exceptions import (
+    InvalidEmail,
+    InvalidResetLink,
+    PasswordsDoseNotMatch,
+)
 from src.authentication.schemas import (
     ForgotPasswordData,
     ResetedSuccessful,
@@ -31,6 +37,7 @@ from src.authentication.utils import (
 )
 from src.config import config
 from src.dependencies import SessionMaker
+from src.exceptions import GlobalException, UnknownError
 from src.models import User
 from src.schemas import UserFullInfo, UserRole
 from src.student.models import Student
@@ -129,10 +136,7 @@ async def forget_password(
             )
             user = result.scalar_one_or_none()
             if user is None:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid Email address",
-                )
+                raise GlobalException(InvalidEmail(), status.HTTP_400_BAD_REQUEST)
 
             reset_token = await to_async(create_reset_password_token, data.email)
 
@@ -150,26 +154,21 @@ async def forget_password(
             await fm.send_message(message)
             return ResetedSuccessful(message="Email has been sent")
     except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Something Unexpected, Server Error",
-        )
+        raise GlobalException(UnknownError(), status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.post("/reset-password", response_model=ResetPasswordOut)
+@router.post(
+    "/reset-password",
+    response_model=ResetPasswordOut,
+    responses={400: {"model": Union[InvalidResetLink, PasswordsDoseNotMatch]}},
+)
 async def reset_password(data: ResetForegetPasswordData, maker: SessionMaker):
     try:
         email = await to_async(decode_reset_password_token, data.secret_token)
         if email is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid Password Reset Payload or Reset Link Expired",
-            )
+            raise GlobalException(InvalidResetLink(), status.HTTP_400_BAD_REQUEST)
         if data.new_password != data.confirm_password:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="New password and confirm password are not same.",
-            )
+            raise GlobalException(PasswordsDoseNotMatch(), status.HTTP_400_BAD_REQUEST)
 
         hashed_password = await to_async(hash_password, data.new_password)
         async with maker.begin() as session:
@@ -178,9 +177,6 @@ async def reset_password(data: ResetForegetPasswordData, maker: SessionMaker):
                 .where(User.email == email)
                 .values({"password": hashed_password})
             )
-        return ResetPasswordOut(success=True, message="Password Rest Successfully!")
+        return ResetPasswordOut()
     except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Something unexpected happened!",
-        )
+        raise GlobalException(UnknownError(), status.HTTP_500_INTERNAL_SERVER_ERROR)

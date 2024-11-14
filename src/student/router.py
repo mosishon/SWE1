@@ -4,18 +4,13 @@ from fastapi import APIRouter
 from src.authentication.dependencies import GetFullAdmin
 from src.authentication.utils import hash_password, to_async
 from src.course.models import Course
-from src.course.schemas import AddCourseIn, AddCourseOut, CourseNotFound
+from src.course.schemas import AddCourseIn, AddCourseOut
 from src.database import get_session_maker
+from src.exceptions import GlobalException
 from src.models import User
-from src.schemas import (
-    AddCode,
-    AddMessage,
-    DeleteCode,
-    DeleteMessage,
-    UserFullInfo,
-    UserRole,
-)
+from src.schemas import UserFullInfo, UserRole
 from src.student.dependencies import GetFullStudent
+from src.student.exceptions import CourseNotFound
 from src.student.models import Student, StudentCourse
 from src.student.schemas import (
     StudentAdded,
@@ -69,8 +64,6 @@ async def create_new_student(register_data: StudentRegisterData, _: GetFullAdmin
                 phone_number=register_data.phone_number,
             )
             return StudentAdded(
-                code=AddCode.STUDENT_ADDED,
-                message=AddMessage.STUDENT_ADDED,
                 student=StudentInfo(user=fu, student_id=register_data.student_id),
             )
 
@@ -93,8 +86,6 @@ async def delete_student(data: StudentDeleteIn, _: GetFullAdmin):
             await session.execute(sa.delete(User).where(User.id == stu))
             fu = UserFullInfo.model_validate(user)
             return StudentDeleted(
-                code=DeleteCode.STUDENT_DELETED,
-                message=DeleteMessage.STUDENT_DELETED,
                 student=StudentInfo(user=fu, student_id=data.student_id),
             )
         else:
@@ -114,7 +105,7 @@ async def reserve_course(data: AddCourseIn, student: GetFullStudent):
         )
         course = check_result.scalar_one_or_none()
         if not course:
-            return CourseNotFound(details="course not found."), 404
+            raise GlobalException(CourseNotFound(), 400)
         query = sa.insert(StudentCourse).values(
             {
                 StudentCourse.course_id: data.course_id,

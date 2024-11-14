@@ -1,6 +1,6 @@
 import datetime
 from enum import Enum
-from typing import NewType, Tuple
+from typing import Literal, NewType, Tuple
 
 from pydantic import BaseModel
 
@@ -52,5 +52,5 @@ class AddCourseOut(BaseModel):
 
 
 class CourseNotFound(BaseModel):
-    code: ErrorCode = ErrorCode.COURSE_NOT_FOUND
+    code: Literal[ErrorCode.COURSE_NOT_FOUND] = ErrorCode.COURSE_NOT_FOUND
     details: str

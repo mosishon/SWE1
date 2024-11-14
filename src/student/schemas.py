@@ -6,8 +6,10 @@ from src.cutsom_types import StudnentID
 from src.schemas import (
     ErrorCode,
     FullUser,
+    Messages,
     ObjectAdded,
     ObjectDeleted,
+    SuccessCodes,
     UserFullInfo,
     UserRegisterData,
 )
@@ -35,10 +37,14 @@ class StudentInfo(BaseModel):
 
 
 class StudentAdded(ObjectAdded):
+    code: Literal[SuccessCodes.STUDENT_ADDED] = SuccessCodes.STUDENT_ADDED
+    message: Literal[Messages.STUDENT_ADDED] = Messages.STUDENT_ADDED
     student: StudentInfo
 
 
 class StudentDeleted(ObjectDeleted):
+    code: Literal[SuccessCodes.STUDENT_DELETED] = SuccessCodes.STUDENT_DELETED
+    message: Literal[Messages.STUDENT_DELETED] = Messages.STUDENT_DELETED
     student: StudentInfo
 
 
