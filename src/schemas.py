@@ -10,6 +10,7 @@ class SuccessCodes(str, enum.Enum):
     STUDENT_DELETED = "STUDENT_DELETED"
     PASSWORD_RESETED = "PASSWORD_RESETED"
     SECTION_ADDED = "SECTION_ADDED"
+    COURSE_ADDED = "COURSE_ADDED"
     INSTRUCTOR_ADDED = "INSTRUCTOR_ADDED"
 
 
@@ -18,6 +19,7 @@ class Messages(str, enum.Enum):
     INSTRUCTOR_ADDED = "Instructor added successfully"
     STUDENT_DELETED = "Student deleted successfully"
     SECTION_ADDED = "Section added successfully"
+    COURSE_ADDED = "Course added successfully"
 
 
 class UserRole(enum.Enum):
@@ -35,6 +37,7 @@ class ErrorCode(str, enum.Enum):
     INVALID_RESET_LINK = "INVALID_RESET_LINK"
     PASSWORDS_NOT_SAME = "PASSWORDS_NOT_SAME"
     SECTION_EXSISTS = "SECTION_EXSISTS"
+    COURSE_EXSISTS = "COURSE_EXSISTS"
     ACCESS_DENIED = "ACCESS_DENIED"
 
 

@@ -51,9 +51,9 @@ class AddInstructorIn(BaseModel):
 
     @field_validator("national_id")
     def national_id_valid(cls, v: str, info: ValidationInfo) -> str:
-        valid = is_valid_iran_code(v)
-        if valid is False:
-            raise ValueError("invalid natinal code")
+        # valid = is_valid_iran_code(v)
+        # if valid is False:
+        #     raise ValueError("invalid natinal code")
         return v
 
     @field_validator("phone_number")

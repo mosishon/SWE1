@@ -61,7 +61,6 @@ CourseSectionToCourseAssociation = Table(
 class CourseSection(BaseModel):
     __tablename__ = "course_section"
     id: Mapped[int] = mapped_column(autoincrement=True, unique=True)
-
     day_of_week: Mapped[int] = mapped_column(Enum(DayOfWeek))
     start_time: Mapped[int] = mapped_column(SmallInteger())
     end_time: Mapped[int] = mapped_column(SmallInteger())
@@ -73,15 +72,18 @@ class CourseSection(BaseModel):
     #     secondary=CourseSectionToInstructorAssociation,
     # )
 
-    __table_args__ = (PrimaryKeyConstraint("day_of_week", "start_time", "end_time"),)
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "day_of_week", "start_time", "end_time"),
+    )
 
 
 class Course(BaseModel):
     __tablename__ = "course"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
 
-    name: Mapped[str] = mapped_column()
-    short_name: Mapped[str] = mapped_column()
+    name: Mapped[str] = mapped_column(primary_key=True)
+    short_name: Mapped[str] = mapped_column(primary_key=True)
+    group: Mapped[int] = mapped_column(primary_key=True)
     instructor_id: Mapped[User] = mapped_column(ForeignKey("instructor.id"), index=True)
     # instructor: Mapped[Instructor] = relationship(back_populates="assigned_courses")
     sections_count: Mapped[int] = mapped_column(Enum(CourseSectionCount))

@@ -1,16 +1,16 @@
 import datetime
-from enum import Enum
+from enum import IntEnum
 from typing import Literal, NewType, Tuple
 
 from pydantic import BaseModel, ValidationInfo, field_validator
 
 from src.instructor.schemas import FullInstructor
-from src.schemas import Messages, ObjectAdded, SuccessCodes
+from src.schemas import FullUser, Messages, ObjectAdded, SuccessCodes
 
 CourseSectionTime = NewType("CourseSectionTime", datetime.time)
 
 
-class DayOfWeek(int, Enum):
+class DayOfWeek(IntEnum):
     shanbe = 0
     yek_shanbe = 1
     do_shanbe = 2
@@ -20,21 +20,24 @@ class DayOfWeek(int, Enum):
     jome = 6
 
 
-class CourseSectionCount(int, Enum):
+class CourseSectionCount(IntEnum):
     one = 1
     two = 2
 
 
-class Unit(int, Enum):
+class Unit(IntEnum):
     one = 1
     two = 2
     three = 3
 
 
 class CourseSection(BaseModel):
-    week_day: DayOfWeek
+    day_of_week: DayOfWeek
     start_time: CourseSectionTime
     end_time: CourseSectionTime
+
+    class Config:
+        from_attributes = True
 
 
 class Course(BaseModel):
@@ -48,7 +51,14 @@ class Course(BaseModel):
 
 
 class AddCourseIn(BaseModel):
-    course_id: int
+    name: str
+    short_name: str
+    instructor_id: int | None
+    section_count: int
+    unit: int
+    group: int
+    importance: int
+    sections_id: list[int]
 
 
 class AddCourseOut(BaseModel):
@@ -86,3 +96,29 @@ class SectionCreated(ObjectAdded):
     code: Literal[SuccessCodes.SECTION_ADDED] = SuccessCodes.SECTION_ADDED
     message: Literal[Messages.SECTION_ADDED] = Messages.SECTION_ADDED
     section_id: int
+
+
+class CourseCreated(ObjectAdded):
+    code: Literal[SuccessCodes.COURSE_ADDED] = SuccessCodes.COURSE_ADDED
+    message: Literal[Messages.COURSE_ADDED] = Messages.COURSE_ADDED
+    course_id: int
+
+
+class AllCoursesInstructor(BaseModel):
+    instructor_id: int
+    full_user: FullUser
+
+
+class AllCoursesCourse(BaseModel):
+    name: str
+    short_name: str
+    sections_count: CourseSectionCount
+    unit: Unit
+    importance: int
+    sections: list[CourseSection]
+    instructor: AllCoursesInstructor
+
+
+class AllCoursesOut(BaseModel):
+    courses: list[AllCoursesCourse]
+    count: int

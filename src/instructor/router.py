@@ -59,3 +59,4 @@ async def new_instructor(data: AddInstructorIn, maker: SessionMaker, _: GetFullA
                     )
         except Exception as ex:
             print(ex)
+            raise
