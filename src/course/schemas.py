@@ -4,7 +4,6 @@ from typing import Literal, NewType
 
 from pydantic import BaseModel, ValidationInfo, field_validator
 
-from src.instructor.schemas import InstructorSchema
 from src.schemas import Messages, ObjectAdded, SuccessCodes
 
 CourseSectionTime = NewType("CourseSectionTime", int)
@@ -31,13 +30,16 @@ class Unit(IntEnum):
     three = 3
 
 
-class CourseSection(BaseModel):
+class CourseSectionSchema(BaseModel):
     day_of_week: DayOfWeek
     start_time: CourseSectionTime
     end_time: CourseSectionTime
 
     class Config:
         from_attributes = True
+
+
+from src.instructor.schemas import InstructorSchema
 
 
 class CourseSchema(BaseModel):
@@ -47,7 +49,7 @@ class CourseSchema(BaseModel):
     sections_count: CourseSectionCount
     unit: Unit
     importance: int
-    sections: list[CourseSection]
+    sections: list[CourseSectionSchema]
 
 
 class AddCourseIn(BaseModel):

@@ -2,9 +2,17 @@ import datetime
 import re
 from typing import TYPE_CHECKING, Literal
 
-from pydantic import BaseModel, EmailStr, PastDate, ValidationInfo, field_validator
+from pydantic import (
+    BaseModel,
+    EmailStr,
+    Field,
+    PastDate,
+    ValidationInfo,
+    field_validator,
+)
 
-from src.cutsom_types import NationalID
+from src.course.schemas import CourseSectionSchema
+from src.cutsom_types import CourseSectionID, NationalID
 from src.schemas import Messages, SuccessCodes
 
 if TYPE_CHECKING:
@@ -50,6 +58,9 @@ class AddInstructorIn(BaseModel):
     email: EmailStr
     birth_day: PastDate
     phone_number: str
+    available_sections: list[CourseSectionID] = Field(
+        description="array of section ids", default=[]
+    )
 
     @field_validator("national_id")
     def national_id_valid(cls, v: str, info: ValidationInfo) -> str:
@@ -75,6 +86,7 @@ class InstructorSchema(BaseModel):
     username: str
     phone_number: str
     birth_day: datetime.date
+    available_sections: list[CourseSectionSchema] = []
 
     class Config:
         from_attributes = True

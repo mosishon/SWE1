@@ -10,9 +10,9 @@ from src.course.schemas import (
     AllCoursesOut,
     CourseCreated,
     CourseSchema,
+    CourseSectionSchema,
+    SectionCreated,
 )
-from src.course.schemas import CourseSection as PydanticCourseSeciton
-from src.course.schemas import SectionCreated
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException
 from src.instructor.models import CourseInstructor, Instructor
@@ -102,9 +102,7 @@ async def get_all_courses(
         for c in result_dict:
             sections = result_dict[c]["sections"]
             instructor = result_dict[c]["instructor"]
-            sections_obj = [
-                PydanticCourseSeciton.model_validate(sec) for sec in sections
-            ]
+            sections_obj = [CourseSectionSchema.model_validate(sec) for sec in sections]
             courses.append(
                 CourseSchema(
                     name=c.name,
