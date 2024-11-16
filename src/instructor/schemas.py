@@ -1,36 +1,38 @@
+import datetime
 import re
 from typing import TYPE_CHECKING, Literal
 
-from pydantic import (
-    BaseModel,
-    EmailStr,
-    PastDate,
-    ValidationInfo,
-    field_validator,
-    model_validator,
-)
+from pydantic import BaseModel, EmailStr, PastDate, ValidationInfo, field_validator
 
 from src.cutsom_types import NationalID
-from src.instructor.exceptions import InstructorTimeIsFull, UserIsNotInstructor
-from src.schemas import FullUser, Messages, SuccessCodes, UserFullInfo, UserRole
+from src.schemas import Messages, SuccessCodes
 
 if TYPE_CHECKING:
-    from src.course.schemas import CourseSection
+    pass
 
 
-class FullInstructor(BaseModel):
-    full_user: FullUser
-    available_course_sections: list["CourseSection"]
+class InstuctorSchema(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    national_id: str
+    email: EmailStr
+    username: str
+    phone_number: str
+    birth_day: datetime.date
 
-    @model_validator(mode="before")
-    def validate_courses_and_available_times(cls, values) -> "FullInstructor":
-        sections_need = sum(map(lambda x: x.sections_count, values["courses"]))
-        sections_have = len(values["available_course_sections"])
-        if sections_need > sections_have:
-            raise InstructorTimeIsFull("test")
-        elif values["full_user"].role != UserRole.INSTRUCTOR:
-            raise UserIsNotInstructor("test")
-        return cls
+    class Config:
+        from_attributes = True
+
+    # @model_validator(mode="before")
+    # def validate_courses_and_available_times(cls, values) -> "FullInstructor":
+    #     sections_need = sum(map(lambda x: x.sections_count, values["courses"]))
+    #     sections_have = len(values["available_course_sections"])
+    #     if sections_need > sections_have:
+    #         raise InstructorTimeIsFull("test")
+    #     elif values["full_user"].role != UserRole.INSTRUCTOR:
+    #         raise UserIsNotInstructor("test")
+    #     return cls
 
 
 def is_valid_iran_code(input: str) -> bool:
@@ -64,8 +66,21 @@ class AddInstructorIn(BaseModel):
         return pn
 
 
+class InstructorSchema(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    national_id: NationalID
+    email: EmailStr
+    username: str
+    phone_number: str
+    birth_day: datetime.date
+
+    class Config:
+        from_attributes = True
+
+
 class InstructorCreated(BaseModel):
     code: Literal[SuccessCodes.INSTRUCTOR_ADDED] = SuccessCodes.INSTRUCTOR_ADDED
     message: Literal[Messages.INSTRUCTOR_ADDED] = Messages.INSTRUCTOR_ADDED
-    instuctor_id: int
-    user_data: UserFullInfo
+    instuctor: InstructorSchema

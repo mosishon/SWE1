@@ -10,7 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.course.schemas import CourseSectionCount, DayOfWeek, Unit
-from src.models import BaseModel, User
+from src.models import BaseModel
 
 CourseSectionToInstructorAssociation = Table(
     "coursesection_to_instructor",
@@ -80,11 +80,10 @@ class CourseSection(BaseModel):
 class Course(BaseModel):
     __tablename__ = "course"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
-
     name: Mapped[str] = mapped_column(primary_key=True)
     short_name: Mapped[str] = mapped_column(primary_key=True)
     group: Mapped[int] = mapped_column(primary_key=True)
-    instructor_id: Mapped[User] = mapped_column(ForeignKey("instructor.id"), index=True)
+    # instructor_id: Mapped[User] = mapped_column(ForeignKey("instructor.id"), index=True)
     # instructor: Mapped[Instructor] = relationship(back_populates="assigned_courses")
     sections_count: Mapped[int] = mapped_column(Enum(CourseSectionCount))
     unit: Mapped[int] = mapped_column(Enum(Unit))

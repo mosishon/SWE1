@@ -3,12 +3,13 @@ from typing import Literal
 from pydantic import BaseModel, EmailStr
 
 from src.cutsom_types import HashedPassword, TimeStamp
-from src.schemas import SuccessCodes
+from src.schemas import SuccessCodes, UserRole
 
 
 # NOT FULL VERSION
 class TokenData(BaseModel):
     user_id: int
+    role: UserRole
     exp: TimeStamp
 
 

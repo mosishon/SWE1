@@ -1,3 +1,4 @@
+import datetime
 import enum
 
 from pydantic import BaseModel, EmailStr, PastDate
@@ -22,7 +23,7 @@ class Messages(str, enum.Enum):
     COURSE_ADDED = "Course added successfully"
 
 
-class UserRole(enum.Enum):
+class UserRole(enum.StrEnum):
     ADMIN = "ADMIN"
     STUDENT = "STUDENT"
     INSTRUCTOR = "INSTRUCTOR"
@@ -72,8 +73,18 @@ class FullUser(UserWithCredential):
     role: UserRole
 
 
-class FullAdmin(BaseModel):
-    full_user: UserFullInfo
+class AdminSchema(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    national_id: str
+    email: EmailStr
+    username: str
+    phone_number: str
+    birth_day: datetime.date
+
+    class Config:
+        from_attributes = True
 
 
 class ObjectAdded(BaseModel):

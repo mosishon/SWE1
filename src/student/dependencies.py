@@ -1,28 +1,55 @@
+import datetime
 from typing import Annotated
 
+import jwt
+import pydantic
 import sqlalchemy as sa
 from fastapi import Depends, HTTPException, status
 
-from src.authentication.dependencies import GetFullUser
+from src import config
+from src.authentication.constants import ALGORITHM
+from src.authentication.dependencies import BackendToken
+from src.authentication.schemas import TokenData
 from src.dependencies import SessionMaker
+from src.schemas import UserRole
 from src.student.models import Student
-from src.student.schemas import FullStudent
+from src.student.schemas import StudentSchema
 
 
-async def get_student(maker: SessionMaker, full_user: GetFullUser) -> FullStudent:
-    async with maker.begin() as session:
-        result = await session.execute(
-            sa.select(Student.student_id).where(Student.for_user == full_user.id)
-        )
-        student_id = result.scalar_one_or_none()
-        if student_id is not None:
-            return FullStudent(full_user=full_user, student_id=student_id)
-        else:
+async def get_current_student(
+    maker: SessionMaker, token: BackendToken
+) -> StudentSchema:
+    try:
+        algs = [ALGORITHM]
+        payload = jwt.decode(token, config.config.SECRET, algorithms=algs)
+        token_data = TokenData(**payload)
+        if token_data.role != UserRole.STUDENT:
+            raise pydantic.ValidationError()
+        if datetime.datetime.fromtimestamp(token_data.exp) < datetime.datetime.now():
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You are not student",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token expired",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+    except (jwt.InvalidTokenError, pydantic.ValidationError):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    async with maker.begin() as session:
+        result = await session.execute(
+            sa.select(Student).where(Student.id == token_data.user_id)
+        )
+        user = result.scalar()
+
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Could not find user",
+            )
+
+        return StudentSchema.model_validate(user)
 
 
-GetFullStudent = Annotated[FullStudent, Depends(get_student)]
+GetFullStudent = Annotated[StudentSchema, Depends(get_current_student)]

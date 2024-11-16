@@ -1,13 +1,13 @@
 import datetime
 from enum import IntEnum
-from typing import Literal, NewType, Tuple
+from typing import Literal, NewType
 
 from pydantic import BaseModel, ValidationInfo, field_validator
 
-from src.instructor.schemas import FullInstructor
-from src.schemas import FullUser, Messages, ObjectAdded, SuccessCodes
+from src.instructor.schemas import InstructorSchema
+from src.schemas import Messages, ObjectAdded, SuccessCodes
 
-CourseSectionTime = NewType("CourseSectionTime", datetime.time)
+CourseSectionTime = NewType("CourseSectionTime", int)
 
 
 class DayOfWeek(IntEnum):
@@ -40,14 +40,14 @@ class CourseSection(BaseModel):
         from_attributes = True
 
 
-class Course(BaseModel):
+class CourseSchema(BaseModel):
     name: str
     short_name: str
-    instructor: FullInstructor
+    instructor: InstructorSchema
     sections_count: CourseSectionCount
     unit: Unit
     importance: int
-    sections: Tuple[CourseSection]
+    sections: list[CourseSection]
 
 
 class AddCourseIn(BaseModel):
@@ -59,6 +59,10 @@ class AddCourseIn(BaseModel):
     group: int
     importance: int
     sections_id: list[int]
+
+
+class ReserveCourseIn(BaseModel):
+    course_id: int
 
 
 class AddCourseOut(BaseModel):
@@ -104,21 +108,6 @@ class CourseCreated(ObjectAdded):
     course_id: int
 
 
-class AllCoursesInstructor(BaseModel):
-    instructor_id: int
-    full_user: FullUser
-
-
-class AllCoursesCourse(BaseModel):
-    name: str
-    short_name: str
-    sections_count: CourseSectionCount
-    unit: Unit
-    importance: int
-    sections: list[CourseSection]
-    instructor: AllCoursesInstructor
-
-
 class AllCoursesOut(BaseModel):
-    courses: list[AllCoursesCourse]
+    courses: list[CourseSchema]
     count: int

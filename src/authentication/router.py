@@ -3,7 +3,6 @@ from typing import Union
 
 import sqlalchemy as sa
 from fastapi import APIRouter, HTTPException, Request, status
-from fastapi.responses import JSONResponse
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from sqlalchemy.exc import IntegrityError
 
@@ -38,10 +37,11 @@ from src.authentication.utils import (
 from src.config import config
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException, UnknownError
-from src.models import User
-from src.schemas import UserFullInfo, UserRole
+from src.models import Admin
+from src.schemas import UserRole
+from src.student.exceptions import StudentDuplicate
 from src.student.models import Student
-from src.student.schemas import StudentDuplicate, StudentInfo, StudentRegisterData
+from src.student.schemas import StudentAdded, StudentRegisterData, StudentSchema
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -53,14 +53,29 @@ async def login(data: OAuthLoginData, maker: SessionMaker):
     elif not data.password:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="password is empty")
     async with maker.begin() as session:
-        result = await session.execute(
-            sa.select(User.id, User.password).where(User.username == data.username)
+        stres = await session.execute(
+            sa.select(Student).where(Student.username == data.username)
         )
-        row = result.first()
-        print(row)
-        if row and await to_async(verify_pwd, data.password, row[1]):
+        adres = await session.execute(
+            sa.select(Admin).where(Admin.username == data.username)
+        )
+        row = stres.scalar()
+        adrow = adres.scalar()
+        if row and await to_async(verify_pwd, data.password, row.password):
             user_data = {
-                "user_id": row[0],
+                "user_id": row.id,
+                "role": UserRole.STUDENT,
+                "exp": (
+                    datetime.datetime.now()
+                    + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                ).timestamp(),
+            }
+
+            return await to_async(create_access_token, TokenData(**user_data))
+        elif adrow and await to_async(verify_pwd, data.password, adrow.password):
+            user_data = {
+                "user_id": adrow.id,
+                "role": UserRole.ADMIN,
                 "exp": (
                     datetime.datetime.now()
                     + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -78,50 +93,57 @@ async def login(data: OAuthLoginData, maker: SessionMaker):
 # TODO error handling
 @router.post(
     REGISTRATION_ROUTE,
-    response_model=StudentInfo,
     responses={400: {"model": StudentDuplicate}},
 )
-async def create_user(data: StudentRegisterData, maker: SessionMaker):
+async def create_user(data: StudentRegisterData, maker: SessionMaker) -> StudentAdded:
     async with maker.begin() as session:
-        user = User(
-            first_name=data.first_name,
-            last_name=data.last_name,
-            national_id=data.national_id,
-            email=data.email,
-            username=data.student_id,
-            phone_number=data.phone_number,
-            birth_day=data.birth_day,
-            password=await to_async(hash_password, data.national_id),
-            role=UserRole.STUDENT,
-        )
-
         # TODO request should send to admin for accept
         try:
-            session.add(user)
-            await session.flush()
-            student = Student()
-            student.for_user = user.id
-            student.student_id = data.student_id
-            session.add(student)
+            res = (
+                await session.execute(
+                    sa.insert(Student)
+                    .values(
+                        {
+                            "first_name": data.first_name,
+                            "id": data.student_id,
+                            "last_name": data.last_name,
+                            "national_id": data.national_id,
+                            "email": data.email,
+                            "username": data.student_id,
+                            "phone_number": data.phone_number,
+                            "birth_day": data.birth_day,
+                            "password": await to_async(hash_password, data.national_id),
+                        }
+                    )
+                    .returning(Student)
+                )
+            ).scalar()
+            if res:
+                return StudentAdded(student=StudentSchema.model_validate(res))
+            else:
+                raise GlobalException(UnknownError(), 500)
+
         except IntegrityError as error:
-            duplicate_field = None
+            duplicate_fields = []
             if "unique constraint" in str(error.orig):
-                # Check for a specific constraint name or field in the error message
-                if "user_email_key" in str(error.orig):
-                    duplicate_field = "email"
-                elif "user_username_key" in str(error.orig):
-                    duplicate_field = "username"
+                s = str(error.orig).find("(") + 1
+                e = str(error.orig).find(")")
+                duplicate_fields = [i.strip() for i in str(error.orig)[s:e].split(",")]
+
+                # # Check for a specific constraint name or field in the error message
+                # if "user_email_key" in str(error.orig):
+                #     duplicate_field = "email"
+                # elif "user_username_key" in str(error.orig):
+                #     duplicate_field = "username"
+                # elif "user_phone_number_key" in str(error.orig):
+                #     duplicate_field = "phone_number"
+                # print(str(error.orig))
 
             # Customize the response message based on the duplicate field
-            if duplicate_field:
-                message = f"The {duplicate_field} provided is already in use."
-            else:
-                message = "Duplicate entry detected."
-            return JSONResponse(StudentDuplicate(details=message).model_dump(), 400)
-
-        return StudentInfo(
-            user=UserFullInfo.model_validate(user), student_id=data.student_id
-        )
+            raise GlobalException(
+                StudentDuplicate(duplicate_fields=duplicate_fields),
+                status.HTTP_400_BAD_REQUEST,
+            )
 
 
 # Not complete
@@ -132,9 +154,9 @@ async def forget_password(
     try:
         async with maker.begin() as session:
             result = await session.execute(
-                sa.select(User).where(User.email == data.email)
+                sa.select(Student).where(Student.email == data.email)
             )
-            user = result.scalar_one_or_none()
+            user = result.scalar()
             if user is None:
                 raise GlobalException(InvalidEmail(), status.HTTP_400_BAD_REQUEST)
 
@@ -173,8 +195,8 @@ async def reset_password(data: ResetForegetPasswordData, maker: SessionMaker):
         hashed_password = await to_async(hash_password, data.new_password)
         async with maker.begin() as session:
             await session.execute(
-                sa.update(User)
-                .where(User.email == email)
+                sa.update(Student)
+                .where(Student.email == email)
                 .values({"password": hashed_password})
             )
         return ResetPasswordOut()

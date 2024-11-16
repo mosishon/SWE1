@@ -7,18 +7,16 @@ from src.course.models import Course, CourseSection, CourseSectionToCourseAssoci
 from src.course.schemas import (
     AddCourseIn,
     AddSectionIn,
-    AllCoursesCourse,
-    AllCoursesInstructor,
     AllCoursesOut,
     CourseCreated,
+    CourseSchema,
 )
 from src.course.schemas import CourseSection as PydanticCourseSeciton
 from src.course.schemas import SectionCreated
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException
-from src.instructor.models import Instructor
-from src.models import User
-from src.schemas import FullUser
+from src.instructor.models import CourseInstructor, Instructor
+from src.instructor.schemas import InstructorSchema
 
 router = APIRouter(prefix="/course", tags=["Courses"])
 
@@ -67,14 +65,12 @@ async def get_all_courses(
 ):
     async with maker.begin() as session:
         query = (
-            select(Course, Instructor, User, CourseSection)
+            select(Course, Instructor, CourseSection)
+            .select_from(Course)
+            .join(CourseInstructor, CourseInstructor.course_id == Course.id)
             .join(
-                Instructor, Course.instructor_id == Instructor.id
+                Instructor, CourseInstructor.instructor_id == Instructor.id
             )  # Join with Instructor
-            .join(
-                User,
-                Instructor.for_user == User.id,
-            )  # Join with User
             .join(
                 CourseSectionToCourseAssociation,
                 Course.id == CourseSectionToCourseAssociation.c.course_id,
@@ -89,18 +85,17 @@ async def get_all_courses(
         )
 
         course = await session.execute(query)
-
         result_dict = {}
 
         # Iterate over the raw query results
         courses = []
         for row in course.all():
-            course, instructor, user, section = row.tuple()
+            course, instructor, section = row.tuple()
             # course_id = course.id  # Assuming `id` is a unique identifier for the course
             if course not in result_dict:
                 result_dict[course] = {
                     "course": course,
-                    "instructor": {"inst": instructor, "user": user},
+                    "instructor": instructor,
                     "sections": [],
                 }
             result_dict[course]["sections"].append(section)
@@ -111,17 +106,14 @@ async def get_all_courses(
                 PydanticCourseSeciton.model_validate(sec) for sec in sections
             ]
             courses.append(
-                AllCoursesCourse(
+                CourseSchema(
                     name=c.name,
                     short_name=c.short_name,
                     sections_count=c.sections_count,
                     unit=c.unit,
                     importance=c.importance,
                     sections=sections_obj,
-                    instructor=AllCoursesInstructor(
-                        full_user=FullUser.model_validate(user),
-                        instructor_id=instructor["inst"].id,
-                    ),
+                    instructor=InstructorSchema.model_validate(instructor),
                 )
             )
         return AllCoursesOut(courses=courses, count=len(courses))
@@ -153,7 +145,6 @@ async def new_course(data: AddCourseIn, maker: SessionMaker, _: GetFullAdmin):
                     "name": data.name,
                     "short_name": data.short_name,
                     "group": data.group,
-                    "instructor_id": data.instructor_id,
                     "sections_count": data.section_count,
                     "unit": data.unit,
                     "importance": data.importance,
@@ -162,7 +153,12 @@ async def new_course(data: AddCourseIn, maker: SessionMaker, _: GetFullAdmin):
             .returning(Course.id)
         )
 
-        insert_res = (await session.execute(insert_query)).scalar()
+        course_id = insert_res = (await session.execute(insert_query)).scalar()
+        insert_course_instructor_query = insert(CourseInstructor).values(
+            {"instructor_id": data.instructor_id, "course_id": course_id}
+        )
+        await session.execute(insert_course_instructor_query)
+
         if insert_res is not None:
             sections = [
                 {"course_id": insert_res, "course_section_id": section_id}
