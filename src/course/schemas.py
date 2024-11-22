@@ -71,6 +71,10 @@ class UnReservedCourseIn(BaseModel):
     course_id: int
 
 
+class DeleteCourse(BaseModel):
+    course_id: int
+
+
 class UnreservedCourseOut(BaseModel):
     course_name: str
 
