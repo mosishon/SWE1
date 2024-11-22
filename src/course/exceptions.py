@@ -16,3 +16,8 @@ class CourseExists(BaseError):
 class CourseNotFound(BaseError):
     code: Literal[ErrorCode.COURSE_NOT_FOUND] = ErrorCode.COURSE_NOT_FOUND
     details: Literal["Course not found."] = "Course not found."
+
+
+class SectionNotFound(BaseError):
+    code: Literal[ErrorCode.SECTION_NOT_FOUND] = ErrorCode.SECTION_NOT_FOUND
+    details: Literal["Seciton not found."] = "Seciton not found."

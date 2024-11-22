@@ -15,6 +15,7 @@ class SuccessCodes(str, enum.Enum):
     INSTRUCTOR_ADDED = "INSTRUCTOR_ADDED"
     INSTRUCTOR_DELETED = "INSTRUCTOR_DELETED"
     COURSE_DELETED = "COURSE_DELETED"
+    SECTION_DELETED = "SECTION_DELETED"
     COURSE_RESERVED = "COURSE_RESERVED"
     COURSE_UNRESERVED = "COURSE_UNRESERVED"
 
@@ -25,6 +26,7 @@ class Messages(str, enum.Enum):
     STUDENT_DELETED = "Student deleted successfully"
     INSTRUCTOR_DELETED = "Instructor deleted successfully"
     COURSE_DELETED = "Course deleted successfully"
+    SECTION_DELETED = "Section deleted successfully"
     SECTION_ADDED = "Section added successfully"
     COURSE_ADDED = "Course added successfully"
 
@@ -37,6 +39,7 @@ class UserRole(enum.StrEnum):
 
 class ErrorCode(str, enum.Enum):
     COURSE_NOT_FOUND = "COURSE_NOT_FOUND"
+    SECTION_NOT_FOUND = "SECTION_NOT_FOUND"
     STUDENT_NOT_FOUND = "STUDENT_NOT_FOUND"
     STUDENT_DUPLICATE = "STUDENT_DUPLICATE"
     INVALID_EMAIL = "INVALID_EMAIL"

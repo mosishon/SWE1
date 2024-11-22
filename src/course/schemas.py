@@ -140,3 +140,9 @@ class CourseDeleted(ObjectDeleted):
 
 class DeleteSectionIn(BaseModel):
     section_id: int
+
+
+class SectionDeleted(ObjectDeleted):
+    code: Literal[SuccessCodes.SECTION_DELETED] = SuccessCodes.SECTION_DELETED
+    message: Literal[Messages.SECTION_DELETED] = Messages.SECTION_DELETED
+    section: CourseSectionSchema

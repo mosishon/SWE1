@@ -1,8 +1,13 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query, status
 from sqlalchemy import delete, func, insert, select
 
 from src.authentication.dependencies import GetFullAdmin
-from src.course.exceptions import CourseExists, CourseNotFound, SectionExists
+from src.course.exceptions import (
+    CourseExists,
+    CourseNotFound,
+    SectionExists,
+    SectionNotFound,
+)
 from src.course.models import Course, CourseSection, CourseSectionToCourseAssociation
 from src.course.schemas import (
     AddCourseIn,
@@ -15,6 +20,7 @@ from src.course.schemas import (
     DeleteCourse,
     DeleteSectionIn,
     SectionCreated,
+    SectionDeleted,
 )
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException
@@ -59,21 +65,28 @@ async def new_section(data: AddSectionIn, maker: SessionMaker, _: GetFullAdmin):
             return SectionCreated(section_id=insert_res)
 
 
-@router.delete("/delete-section", status_code=status.HTTP_200_OK)
+@router.delete(
+    "/delete-section",
+    status_code=status.HTTP_200_OK,
+    tags=["ByAdmin"],
+    responses={400: {"model": SectionNotFound}},
+)
 async def delete_section(_: GetFullAdmin, maker: SessionMaker, data: DeleteSectionIn):
     async with maker.begin() as session:
         section = await session.execute(
             select(CourseSection).where(CourseSection.id == data.section_id)
         )
 
-        check_section = section.scalar_one_or_none()
+        check_section = section.scalar()
 
-        if not check_section:
-            raise HTTPException(status_code=404, detail="This section does not exist")
+        if check_section is None:
+            raise GlobalException(SectionNotFound(), status.HTTP_400_BAD_REQUEST)
 
         query = delete(CourseSection).where(CourseSection.id == data.section_id)
 
         await session.execute(query)
+
+        return SectionDeleted(section=CourseSectionSchema.model_validate(check_section))
 
 
 # TODO Error Handeling
