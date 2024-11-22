@@ -1,5 +1,5 @@
-from fastapi import APIRouter, status
-from sqlalchemy import insert, select
+from fastapi import APIRouter, status, HTTPException
+from sqlalchemy import insert, select, delete
 
 from src.authentication.dependencies import GetFullAdmin
 from src.authentication.utils import hash_password, to_async
@@ -7,7 +7,7 @@ from src.course.models import CourseSection, CourseSectionToInstructorAssociatio
 from src.course.schemas import CourseSectionSchema
 from src.dependencies import SessionMaker
 from src.instructor.models import Instructor
-from src.instructor.schemas import AddInstructorIn, InstructorCreated, InstructorSchema
+from src.instructor.schemas import AddInstructorIn, InstructorCreated, InstructorSchema, DeleteInstructorIn
 
 router = APIRouter(tags=["Instructor"])
 
@@ -78,3 +78,30 @@ async def new_instructor(data: AddInstructorIn, maker: SessionMaker, _: GetFullA
         except Exception as ex:
             print(ex)
             raise
+
+
+
+@router.delete(
+    "/delete-instructor",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["ByAdmin"]
+)
+async def delete_instructor(_: GetFullAdmin, maker: SessionMaker, data: DeleteInstructorIn):
+    async with maker().begin() as session:
+        
+        check_instructor = await session.execute(
+             select(Instructor)
+            .where(Instructor.id == data.instructor_id)
+        )
+
+        instructor = check_instructor.scalar_one_or_none()
+        if not instructor:
+            raise HTTPException(status_code=404, detail=f'Instructor is not found')        
+
+        query = (
+            delete(Instructor)
+            .where(Instructor.id == data.instructor_id)
+        )
+
+        await session.execute(query)
+
