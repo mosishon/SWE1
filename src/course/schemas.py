@@ -76,11 +76,11 @@ class DeleteCourse(BaseModel):
 
 
 class UnreservedCourseOut(BaseModel):
-    course_name: str
+    course: CourseSchema
 
 
 class AddCourseOut(BaseModel):
-    course_name: str
+    course: CourseSchema
 
 
 class AddSectionIn(BaseModel):

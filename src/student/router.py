@@ -8,6 +8,7 @@ from src.course.exceptions import CourseNotFound
 from src.course.models import Course
 from src.course.schemas import (
     AddCourseOut,
+    CourseSchema,
     ReserveCourseIn,
     UnReservedCourseIn,
     UnreservedCourseOut,
@@ -107,14 +108,16 @@ async def delete_student(
     response_model=AddCourseOut,
     responses={404: {"model": CourseNotFound}},
 )
-async def reserve_course(data: ReserveCourseIn, student: GetFullStudent):
+async def reserve_course(
+    data: ReserveCourseIn, student: GetFullStudent
+) -> AddCourseOut:
     async with get_session_maker().begin() as session:
         student_id = student.id
         check_result = await session.execute(
             sa.select(Course).where(Course.id == data.course_id)
         )
-        course = check_result.scalar_one_or_none()
-        if not course:
+        course = check_result.scalar()
+        if course is None:
             raise GlobalException(CourseNotFound(), 400)
         query = sa.insert(ReservedCourse).values(
             {
@@ -123,23 +126,23 @@ async def reserve_course(data: ReserveCourseIn, student: GetFullStudent):
             }
         )
         await session.execute(query)
-        return AddCourseOut(course_name=course.name)
+        return AddCourseOut(course=CourseSchema.model_validate(course))
 
 
 @router.delete(
-    "/unreserv-course",
+    "/unreserve-course",
     response_model=UnreservedCourseOut,
     responses={404: {"model": CourseNotFound}},
 )
 async def unreserve_course(
     data: UnReservedCourseIn, student: GetFullStudent, maker: SessionMaker
-):
+) -> UnreservedCourseOut:
     async with maker.begin() as session:
         check_result = await session.execute(
             sa.select(Course).where(Course.id == data.course_id)
         )
 
-        course = check_result.scalar_one_or_none()
+        course = check_result.scalar()
         if not course:
             raise GlobalException(CourseNotFound(), 400)
 
@@ -151,7 +154,7 @@ async def unreserve_course(
 
         await session.execute(query)
 
-        return UnreservedCourseOut(course_name=course.name)
+        return UnreservedCourseOut(course=CourseSchema.model_validate(course))
 
 
 @router.get(
