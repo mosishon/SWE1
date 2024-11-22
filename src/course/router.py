@@ -21,7 +21,7 @@ from src.instructor.schemas import InstructorSchema
 router = APIRouter(prefix="/course", tags=["Courses"])
 
 
-@router.put(
+@router.post(
     "/new-section",
     status_code=status.HTTP_201_CREATED,
     responses={400: {"model": SectionExists}, 201: {"model": SectionCreated}},

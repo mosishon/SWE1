@@ -79,9 +79,7 @@ async def create_new_student(
 
         student = student.scalar()
         if student:
-            return StudentAdded(
-                student=StudentSchema.model_validate(student),
-            )
+            return StudentAdded(student=StudentSchema.model_validate(student))
 
 
 @router.post("/delete-student", response_model=StudentAdded)
