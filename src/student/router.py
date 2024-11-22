@@ -186,7 +186,7 @@ async def get_all_students(
     async with maker.begin() as session:
         query = sa.select(Student).limit(limit=limit).offset(offset=offset)
 
-        res = await session.execute(query)
+        res = (await session.execute(query)).scalars()
 
         students = [StudentSchema.model_validate(student) for student in res]
 
