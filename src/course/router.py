@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, status
 from sqlalchemy import func, insert, select
 
 from src.authentication.dependencies import GetFullAdmin
@@ -61,7 +61,10 @@ async def new_section(data: AddSectionIn, maker: SessionMaker, _: GetFullAdmin):
     "/all", status_code=status.HTTP_200_OK, responses={200: {"model": AllCoursesOut}}
 )
 async def get_all_courses(
-    maker: SessionMaker, _: GetFullAdmin, limit: int = 10, offset: int = 0
+    maker: SessionMaker,
+    _: GetFullAdmin,
+    limit: int = Query(gt=0, default=10, lt=25),
+    offset: int = Query(gt=-1, default=0),
 ):
     async with maker.begin() as session:
         query = (

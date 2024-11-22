@@ -62,14 +62,6 @@ class StudentNotFound(BaseModel):
     details: str
 
 
-class GetStudentOut(BaseModel):
-    id: int
-    first_name: str
-    last_name: str
-    national_id: str
-    email: EmailStr
-    username: str
-    phone_number: str
-    birth_day: datetime.date
-    class Config:
-        from_attributes = True
+class AllStudentsOut(BaseModel):
+    students: list[StudentSchema]
+    count: int

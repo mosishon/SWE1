@@ -83,6 +83,7 @@ class Course(BaseModel):
     name: Mapped[str] = mapped_column(primary_key=True)
     short_name: Mapped[str] = mapped_column(primary_key=True)
     group: Mapped[int] = mapped_column(primary_key=True)
+    is_active: Mapped[bool] = mapped_column(default=True)
     # instructor_id: Mapped[User] = mapped_column(ForeignKey("instructor.id"), index=True)
     # instructor: Mapped[Instructor] = relationship(back_populates="assigned_courses")
     sections_count: Mapped[int] = mapped_column(Enum(CourseSectionCount))

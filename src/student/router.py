@@ -13,13 +13,13 @@ from src.student.dependencies import GetFullStudent
 from src.student.exceptions import CourseNotFound, StudentDuplicate
 from src.student.models import Student, StudentCourse
 from src.student.schemas import (
+    AllStudentsOut,
     StudentAdded,
     StudentDeleted,
     StudentDeleteIn,
     StudentNotFound,
     StudentRegisterData,
     StudentSchema,
-    GetStudentOut
 )
 
 router = APIRouter(prefix="/student", tags=["Student"])
@@ -137,34 +137,19 @@ async def get_reserved_course(student: GetFullStudent):
         # Todo need check response
         return StudentNotFound(details="Student not found"), 404
 
-@router.get(
-    "/all"
-)
-async def get_all_students(GetFullAdmin ,limit: int = Query(gt=0, default=10 , lt=25), offset: int = Query(gt=-1, default=0)):
-    async with get_session_maker().begin() as session:
-        query = (
-            sa.select(
-                        Student.id,
-                        Student.first_name,
-                        Student.last_name,
-                        Student.national_id,
-                        Student.email,
-                        Student.username,
-                        Student.phone_number,
-                        Student.birth_day
-                    )
-                    .limit(limit=limit)
-                    .offset(offset=offset)
-            )
-        
+
+@router.get("/all")
+async def get_all_students(
+    _: GetFullAdmin,
+    maker: SessionMaker,
+    limit: int = Query(gt=0, default=10, lt=25),
+    offset: int = Query(gt=-1, default=0),
+) -> AllStudentsOut:
+    async with maker.begin() as session:
+        query = sa.select(Student).limit(limit=limit).offset(offset=offset)
+
         res = await session.execute(query)
-        
 
-        students = []
-        for student in res:
-            students.append(GetStudentOut.model_validate(student))
-        
+        students = [StudentSchema.model_validate(student) for student in res]
 
-        return students
-
-            
+        return AllStudentsOut(students=students, count=len(students))
