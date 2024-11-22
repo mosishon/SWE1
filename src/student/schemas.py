@@ -60,3 +60,16 @@ class StudentDeleted(ObjectDeleted):
 class StudentNotFound(BaseModel):
     code: Literal[ErrorCode.STUDENT_NOT_FOUND] = ErrorCode.STUDENT_NOT_FOUND
     details: str
+
+
+class GetStudentOut(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    national_id: str
+    email: EmailStr
+    username: str
+    phone_number: str
+    birth_day: datetime.date
+    class Config:
+        from_attributes = True
