@@ -17,6 +17,8 @@ services:
       - postgres_db
     environment:
       DATABASE_URL: "postgresql+asyncpg://postgres:password@postgres_db:5432/swe"
+      DB_NAME: swe
+
     volumes:
       - .:/app
 

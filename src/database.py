@@ -37,7 +37,7 @@ async def main_run():
         )  # Disable transaction
         if isinstance(conn, AsyncConnection):
             try:
-                await conn.execute(text(f'"CREATE DATABASE {DB_NAME}"'))
+                await conn.execute(text(f"CREATE DATABASE {DB_NAME}"))
                 print(f"Database '{DB_NAME}' created.")
             except Exception as e:
                 if "already exists" in str(e):
