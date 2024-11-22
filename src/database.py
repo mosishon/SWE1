@@ -50,4 +50,4 @@ async def main_run():
         )
 
 
-asyncio.get_event_loop().run_until_complete(main_run())
+asyncio.create_task(main_run())
