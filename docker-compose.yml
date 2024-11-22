@@ -26,6 +26,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+      DB_NAME: swe
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 1s
@@ -41,7 +42,6 @@ services:
           memory: "512M"    # Reserve 512 MB of RAM
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   postgres_data:
