@@ -36,7 +36,7 @@ services:
           memory: "768M"    # Limit to 256 MB of RAM
         reservations:
           cpus: "0.25"      # Reserve 0.25 CPU core
-          memory: "512"    # Reserve 128 MB of RAM
+          memory: "512M"    # Reserve 128 MB of RAM
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
