@@ -13,16 +13,15 @@ from src.course.schemas import (
 )
 from src.database import get_session_maker
 from src.dependencies import SessionMaker
-from src.exceptions import GlobalException, UnknownError
+from src.exceptions import GlobalException
 from src.student.dependencies import GetFullStudent
-from src.student.exceptions import CourseNotFound, StudentDuplicate
+from src.student.exceptions import CourseNotFound, StudentDuplicate, StudentNotFound
 from src.student.models import ReservedCourse, Student
 from src.student.schemas import (
     AllStudentsOut,
     StudentAdded,
     StudentDeleted,
     StudentDeleteIn,
-    StudentNotFound,
     StudentRegisterData,
     StudentSchema,
 )
@@ -82,14 +81,16 @@ async def create_new_student(
             return StudentAdded(student=StudentSchema.model_validate(student))
 
 
-@router.post("/delete-student", response_model=StudentAdded)
-async def delete_student(data: StudentDeleteIn, maker: SessionMaker, _: GetFullAdmin):
+@router.post("/delete-student")
+async def delete_student(
+    data: StudentDeleteIn, maker: SessionMaker, _: GetFullAdmin
+) -> StudentDeleted:
     async with maker.begin() as session:
         stu = await session.execute(
             sa.select(sa.func.count(Student.id)).where(Student.id == data.student_id)
         )
         stu = stu.scalar()
-        if stu:
+        if stu is not None:
             await session.execute(
                 sa.delete(Student).where(Student.id == data.student_id)
             )
@@ -97,7 +98,7 @@ async def delete_student(data: StudentDeleteIn, maker: SessionMaker, _: GetFullA
                 student=StudentSchema.model_validate(stu),
             )
         else:
-            raise GlobalException(UnknownError(), status.HTTP_500_INTERNAL_SERVER_ERROR)
+            raise GlobalException(StudentNotFound(), status.HTTP_400_BAD_REQUEST)
 
 
 @router.post(
@@ -166,7 +167,9 @@ async def get_reserved_course(student: GetFullStudent):
         result = await session.execute(query)
         _ = result.scalars().all()
         # Todo need check response
-        return StudentNotFound(details="Student not found"), 404
+        raise GlobalException(
+            StudentNotFound(), status_code=status.HTTP_400_BAD_REQUEST
+        )
 
 
 @router.get("/all")

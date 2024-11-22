@@ -13,34 +13,34 @@ from pydantic import (
 
 from src.course.schemas import CourseSectionSchema
 from src.cutsom_types import CourseSectionID, NationalID
-from src.schemas import Messages, SuccessCodes
+from src.schemas import Messages, ObjectDeleted, SuccessCodes
 
 if TYPE_CHECKING:
     pass
 
 
-class InstuctorSchema(BaseModel):
-    id: int
-    first_name: str
-    last_name: str
-    national_id: str
-    email: EmailStr
-    username: str
-    phone_number: str
-    birth_day: datetime.date
+# class InstuctorSchema(BaseModel):
+#     id: int
+#     first_name: str
+#     last_name: str
+#     national_id: str
+#     email: EmailStr
+#     username: str
+#     phone_number: str
+#     birth_day: datetime.date
 
-    class Config:
-        from_attributes = True
+#     class Config:
+#         from_attributes = True
 
-    # @model_validator(mode="before")
-    # def validate_courses_and_available_times(cls, values) -> "FullInstructor":
-    #     sections_need = sum(map(lambda x: x.sections_count, values["courses"]))
-    #     sections_have = len(values["available_course_sections"])
-    #     if sections_need > sections_have:
-    #         raise InstructorTimeIsFull("test")
-    #     elif values["full_user"].role != UserRole.INSTRUCTOR:
-    #         raise UserIsNotInstructor("test")
-    #     return cls
+#     # @model_validator(mode="before")
+#     # def validate_courses_and_available_times(cls, values) -> "FullInstructor":
+#     #     sections_need = sum(map(lambda x: x.sections_count, values["courses"]))
+#     #     sections_have = len(values["available_course_sections"])
+#     #     if sections_need > sections_have:
+#     #         raise InstructorTimeIsFull("test")
+#     #     elif values["full_user"].role != UserRole.INSTRUCTOR:
+#     #         raise UserIsNotInstructor("test")
+#     return cls
 
 
 def is_valid_iran_code(input: str) -> bool:
@@ -101,3 +101,8 @@ class InstructorCreated(BaseModel):
 class DeleteInstructorIn(BaseModel):
     instructor_id: int
 
+
+class InstructorDeleted(ObjectDeleted):
+    code: Literal[SuccessCodes.INSTRUCTOR_DELETED] = SuccessCodes.INSTRUCTOR_DELETED
+    message: Literal[Messages.INSTRUCTOR_DELETED] = Messages.INSTRUCTOR_DELETED
+    instructor: InstructorSchema

@@ -1,13 +1,21 @@
-from fastapi import APIRouter, status, HTTPException
-from sqlalchemy import insert, select, delete
+from fastapi import APIRouter, status
+from sqlalchemy import delete, insert, select
 
 from src.authentication.dependencies import GetFullAdmin
 from src.authentication.utils import hash_password, to_async
 from src.course.models import CourseSection, CourseSectionToInstructorAssociation
 from src.course.schemas import CourseSectionSchema
 from src.dependencies import SessionMaker
+from src.exceptions import GlobalException
+from src.instructor.exceptions import InstructorNotFound
 from src.instructor.models import Instructor
-from src.instructor.schemas import AddInstructorIn, InstructorCreated, InstructorSchema, DeleteInstructorIn
+from src.instructor.schemas import (
+    AddInstructorIn,
+    DeleteInstructorIn,
+    InstructorCreated,
+    InstructorDeleted,
+    InstructorSchema,
+)
 
 router = APIRouter(tags=["Instructor"])
 
@@ -80,28 +88,27 @@ async def new_instructor(data: AddInstructorIn, maker: SessionMaker, _: GetFullA
             raise
 
 
-
 @router.delete(
     "/delete-instructor",
     status_code=status.HTTP_204_NO_CONTENT,
-    tags=["ByAdmin"]
+    tags=["ByAdmin"],
+    responses={400: {"model": InstructorNotFound}},
 )
-async def delete_instructor(_: GetFullAdmin, maker: SessionMaker, data: DeleteInstructorIn):
-    async with maker().begin() as session:
-        
+async def delete_instructor(
+    _: GetFullAdmin,
+    maker: SessionMaker,
+    data: DeleteInstructorIn,
+) -> InstructorDeleted:
+    async with maker.begin() as session:
         check_instructor = await session.execute(
-             select(Instructor)
-            .where(Instructor.id == data.instructor_id)
+            select(Instructor).where(Instructor.id == data.instructor_id)
         )
 
-        instructor = check_instructor.scalar_one_or_none()
-        if not instructor:
-            raise HTTPException(status_code=404, detail=f'Instructor is not found')        
+        instructor = check_instructor.scalar()
+        if instructor is None:
+            raise GlobalException(InstructorNotFound(), status.HTTP_400_BAD_REQUEST)
 
-        query = (
-            delete(Instructor)
-            .where(Instructor.id == data.instructor_id)
-        )
+        query = delete(Instructor).where(Instructor.id == data.instructor_id)
 
         await session.execute(query)
-
+        return InstructorDeleted(instructor=InstructorSchema.model_validate(instructor))

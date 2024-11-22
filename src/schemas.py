@@ -13,12 +13,14 @@ class SuccessCodes(str, enum.Enum):
     SECTION_ADDED = "SECTION_ADDED"
     COURSE_ADDED = "COURSE_ADDED"
     INSTRUCTOR_ADDED = "INSTRUCTOR_ADDED"
+    INSTRUCTOR_DELETED = "INSTRUCTOR_DELETED"
 
 
 class Messages(str, enum.Enum):
     STUDENT_ADDED = "Student added successfully"
     INSTRUCTOR_ADDED = "Instructor added successfully"
     STUDENT_DELETED = "Student deleted successfully"
+    INSTRUCTOR_DELETED = "Instructor deleted successfully"
     SECTION_ADDED = "Section added successfully"
     COURSE_ADDED = "Course added successfully"
 
@@ -40,6 +42,7 @@ class ErrorCode(str, enum.Enum):
     SECTION_EXSISTS = "SECTION_EXSISTS"
     COURSE_EXSISTS = "COURSE_EXSISTS"
     ACCESS_DENIED = "ACCESS_DENIED"
+    INSTRUCTOR_NOT_FOUND = "INSTRUCTOR_NOT_FOUND"
 
 
 class BaseUser(BaseModel):

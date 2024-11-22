@@ -5,7 +5,6 @@ from pydantic import BaseModel, EmailStr
 
 from src.cutsom_types import StudnentID
 from src.schemas import (
-    ErrorCode,
     Messages,
     ObjectAdded,
     ObjectDeleted,
@@ -57,9 +56,9 @@ class StudentDeleted(ObjectDeleted):
     student: StudentSchema
 
 
-class StudentNotFound(BaseModel):
-    code: Literal[ErrorCode.STUDENT_NOT_FOUND] = ErrorCode.STUDENT_NOT_FOUND
-    details: str
+# class StudentNotFound(BaseModel):
+#     code: Literal[ErrorCode.STUDENT_NOT_FOUND] = ErrorCode.STUDENT_NOT_FOUND
+#     details: str
 
 
 class AllStudentsOut(BaseModel):
