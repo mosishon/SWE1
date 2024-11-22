@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.authentication.dependencies import GetFullAdmin
 from src.authentication.utils import hash_password, to_async
+from src.course.exceptions import CourseNotFound
 from src.course.models import Course
 from src.course.schemas import (
     AddCourseOut,
@@ -15,7 +16,7 @@ from src.database import get_session_maker
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException
 from src.student.dependencies import GetFullStudent
-from src.student.exceptions import CourseNotFound, StudentDuplicate, StudentNotFound
+from src.student.exceptions import StudentDuplicate, StudentNotFound
 from src.student.models import ReservedCourse, Student
 from src.student.schemas import (
     AllStudentsOut,

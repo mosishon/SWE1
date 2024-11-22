@@ -4,7 +4,7 @@ from typing import Literal, NewType
 
 from pydantic import BaseModel, ValidationInfo, field_validator
 
-from src.schemas import Messages, ObjectAdded, SuccessCodes
+from src.schemas import Messages, ObjectAdded, ObjectDeleted, SuccessCodes
 
 CourseSectionTime = NewType("CourseSectionTime", int)
 
@@ -125,3 +125,9 @@ class CourseCreated(ObjectAdded):
 class AllCoursesOut(BaseModel):
     courses: list[CourseSchema]
     count: int
+
+
+class CourseDeleted(ObjectDeleted):
+    code: Literal[SuccessCodes.COURSE_DELETED] = SuccessCodes.COURSE_DELETED
+    message: Literal[Messages.COURSE_DELETED] = Messages.COURSE_DELETED
+    course: CourseSchema

@@ -14,6 +14,7 @@ class SuccessCodes(str, enum.Enum):
     COURSE_ADDED = "COURSE_ADDED"
     INSTRUCTOR_ADDED = "INSTRUCTOR_ADDED"
     INSTRUCTOR_DELETED = "INSTRUCTOR_DELETED"
+    COURSE_DELETED = "COURSE_DELETED"
 
 
 class Messages(str, enum.Enum):
@@ -21,6 +22,7 @@ class Messages(str, enum.Enum):
     INSTRUCTOR_ADDED = "Instructor added successfully"
     STUDENT_DELETED = "Student deleted successfully"
     INSTRUCTOR_DELETED = "Instructor deleted successfully"
+    COURSE_DELETED = "Course deleted successfully"
     SECTION_ADDED = "Section added successfully"
     COURSE_ADDED = "Course added successfully"
 

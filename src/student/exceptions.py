@@ -8,11 +8,6 @@ class InvalidEmail(BaseError):
     details: Literal["Invalid Email address"] = "Invalid Email address"
 
 
-class CourseNotFound(BaseError):
-    code: Literal[ErrorCode.COURSE_NOT_FOUND] = ErrorCode.COURSE_NOT_FOUND
-    details: Literal["course not found."] = "course not found."
-
-
 class StudentDuplicate(BaseError):
     code: Literal[ErrorCode.STUDENT_DUPLICATE] = ErrorCode.STUDENT_DUPLICATE
     details: Literal["student is duplicate."] = "student is duplicate."

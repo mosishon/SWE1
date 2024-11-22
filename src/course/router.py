@@ -1,14 +1,15 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query, status
 from sqlalchemy import delete, func, insert, select
 
 from src.authentication.dependencies import GetFullAdmin
-from src.course.exceptions import CourseExists, SectionExists
+from src.course.exceptions import CourseExists, CourseNotFound, SectionExists
 from src.course.models import Course, CourseSection, CourseSectionToCourseAssociation
 from src.course.schemas import (
     AddCourseIn,
     AddSectionIn,
     AllCoursesOut,
     CourseCreated,
+    CourseDeleted,
     CourseSchema,
     CourseSectionSchema,
     DeleteCourse,
@@ -174,19 +175,23 @@ async def new_course(data: AddCourseIn, maker: SessionMaker, _: GetFullAdmin):
             return CourseCreated(course_id=insert_res)
 
 
-@router.delete("delete-course", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_course(_: GetFullAdmin, maker: SessionMaker, data: DeleteCourse):
+@router.delete(
+    "/delete-course",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={400: {"model": CourseNotFound}},
+)
+async def delete_course(
+    _: GetFullAdmin, maker: SessionMaker, data: DeleteCourse
+) -> CourseDeleted:
     async with maker.begin() as session:
-        check_course = await session.execute(
-            select(Course).where(Course.id == data.course_id)
-        )
+        check_course = (
+            await session.execute(select(Course).where(Course.id == data.course_id))
+        ).scalar()
 
-        if not check_course:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Course with {data.course_name} name doesn't exist",
-            )
-
+        if check_course is None:
+            raise GlobalException(CourseNotFound(), status.HTTP_400_BAD_REQUEST)
         query = delete(Course).where(Course.id == data.course_id)
 
         await session.execute(query)
+
+        return CourseDeleted(course=CourseSchema.model_validate(check_course))

@@ -11,3 +11,8 @@ class SectionExists(BaseError):
 class CourseExists(BaseError):
     code: Literal[ErrorCode.COURSE_EXSISTS] = ErrorCode.COURSE_EXSISTS
     details: Literal["Course already exists"] = "Course already exists"
+
+
+class CourseNotFound(BaseError):
+    code: Literal[ErrorCode.COURSE_NOT_FOUND] = ErrorCode.COURSE_NOT_FOUND
+    details: Literal["Course not found."] = "Course not found."
