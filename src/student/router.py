@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from src.authentication.dependencies import GetFullAdmin
 from src.authentication.utils import hash_password, to_async
 from src.course.models import Course
-from src.course.schemas import AddCourseOut, ReserveCourseIn
+from src.course.schemas import AddCourseOut, ReserveCourseIn, UnReservedCourseIn, UnreservedCourseOut
 from src.database import get_session_maker
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException, UnknownError
@@ -119,6 +119,33 @@ async def reserve_course(data: ReserveCourseIn, student: GetFullStudent):
         )
         await session.execute(query)
         return AddCourseOut(course_name=course.name)
+
+@router.delete(
+    "/unreserv-course",
+    response_model=UnreservedCourseOut,
+    responses={404: {"model": CourseNotFound}}
+)
+async def unreserve_course(data: UnReservedCourseIn, student: GetFullStudent, maker: SessionMaker):
+    async with maker().begin() as session:
+        
+        check_result = await session.execute(
+            sa.select(Course).where(Course.id == data.course_id)
+        )
+
+        course = check_result.scalar_one_or_none()
+        if not course:
+            raise GlobalException(CourseNotFound(), 400)
+        
+        query = (
+            sa.delete(StudentCourse)
+            .where(StudentCourse.student_id == student.id)
+            .where(StudentCourse.course_id == data.course_id)
+        )
+
+        await session.execute(query)
+
+        return UnreservedCourseOut(course_name=course.name)
+
 
 
 @router.get(
