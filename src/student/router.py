@@ -8,10 +8,10 @@ from src.course.models import Course
 from src.course.schemas import AddCourseOut, ReserveCourseIn
 from src.database import get_session_maker
 from src.dependencies import SessionMaker
-from src.exceptions import GlobalException
+from src.exceptions import GlobalException, UnknownError
 from src.student.dependencies import GetFullStudent
 from src.student.exceptions import CourseNotFound, StudentDuplicate
-from src.student.models import Student, StudentCourse
+from src.student.models import ReservedCourse, Student
 from src.student.schemas import (
     AllStudentsOut,
     StudentAdded,
@@ -94,7 +94,7 @@ async def delete_student(data: StudentDeleteIn, maker: SessionMaker, _: GetFullA
                 student=StudentSchema.model_validate(stu),
             )
         else:
-            return {}  # TODO return error
+            raise GlobalException(UnknownError(), status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.post(
@@ -111,10 +111,10 @@ async def reserve_course(data: ReserveCourseIn, student: GetFullStudent):
         course = check_result.scalar_one_or_none()
         if not course:
             raise GlobalException(CourseNotFound(), 400)
-        query = sa.insert(StudentCourse).values(
+        query = sa.insert(ReservedCourse).values(
             {
-                StudentCourse.course_id: data.course_id,
-                StudentCourse.student_id: student_id,
+                ReservedCourse.course_id: data.course_id,
+                ReservedCourse.student_id: student_id,
             }
         )
         await session.execute(query)
@@ -129,8 +129,8 @@ async def get_reserved_course(student: GetFullStudent):
         student_id = student.id
         query = (
             sa.select(Course.name, Course.unit)
-            .join(StudentCourse)
-            .where(StudentCourse.student_id == student_id)
+            .join(ReservedCourse)
+            .where(ReservedCourse.student_id == student_id)
         )
         result = await session.execute(query)
         _ = result.scalars().all()

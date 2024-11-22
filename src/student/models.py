@@ -25,8 +25,8 @@ class Student(BaseModel):
     password: Mapped[HashedPassword] = mapped_column(nullable=False)
 
 
-class StudentCourse(BaseModel):
-    __tablename__ = "student_course"
+class ReservedCourse(BaseModel):
+    __tablename__ = "reserved_course"
 
     student_id: Mapped[StudnentID] = mapped_column(
         ForeignKey("student.id"), primary_key=True, nullable=False

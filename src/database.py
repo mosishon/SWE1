@@ -32,6 +32,7 @@ def get_session_maker() -> async_sessionmaker[AsyncSession]:
 async def main_run():
     async with engine.begin() as conn:
         await conn.run_sync(BaseModel.metadata.create_all)
+        print("DATABASE Created")
     async with engine.begin() as conn:
         await conn.execute(
             insert(Admin).values(
@@ -49,4 +50,4 @@ async def main_run():
         )
 
 
-asyncio.create_task(main_run())
+asyncio.get_event_loop().run_until_complete(main_run())
