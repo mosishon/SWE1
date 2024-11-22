@@ -118,7 +118,7 @@ async def reserve_course(
         )
         course = check_result.scalar()
         if course is None:
-            raise GlobalException(CourseNotFound(), 400)
+            raise GlobalException(CourseNotFound(), status.HTTP_400_BAD_REQUEST)
         query = sa.insert(ReservedCourse).values(
             {
                 ReservedCourse.course_id: data.course_id,

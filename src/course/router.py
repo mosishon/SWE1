@@ -177,7 +177,6 @@ async def new_course(data: AddCourseIn, maker: SessionMaker, _: GetFullAdmin):
 
 @router.delete(
     "/delete-course",
-    status_code=status.HTTP_204_NO_CONTENT,
     responses={400: {"model": CourseNotFound}},
 )
 async def delete_course(

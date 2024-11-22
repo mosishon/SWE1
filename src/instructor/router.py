@@ -90,7 +90,6 @@ async def new_instructor(data: AddInstructorIn, maker: SessionMaker, _: GetFullA
 
 @router.delete(
     "/delete-instructor",
-    status_code=status.HTTP_204_NO_CONTENT,
     tags=["ByAdmin"],
     responses={400: {"model": InstructorNotFound}},
 )
