@@ -21,7 +21,7 @@ services:
       - .:/app
 
   postgres_db:
-    image: postgres:latest
+    image: postgres:16
     container_name: postgres_db
     ports:
       - "5432:5432"
