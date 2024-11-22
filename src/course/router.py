@@ -23,7 +23,8 @@ from src.course.schemas import (
     SectionDeleted,
 )
 from src.dependencies import SessionMaker
-from src.exceptions import GlobalException
+from src.exceptions import GlobalException, UnknownError
+from src.instructor.exceptions import InstructorNotFound
 from src.instructor.models import CourseInstructor, Instructor
 from src.instructor.schemas import InstructorSchema
 
@@ -156,11 +157,19 @@ async def get_all_courses(
 @router.post(
     "/new-course",
     status_code=status.HTTP_201_CREATED,
-    responses={400: {"model": CourseExists}, 201: {"model": SectionCreated}},
+    responses={400: {"model": CourseExists | InstructorNotFound}},
     tags=["ByAdmin"],
 )
-async def new_course(data: AddCourseIn, maker: SessionMaker, _: GetFullAdmin):
+async def new_course(
+    data: AddCourseIn, maker: SessionMaker, _: GetFullAdmin
+) -> CourseCreated:
     async with maker.begin() as session:
+        check_inst_query = select(Instructor).filter(
+            Instructor.id == data.instructor_id
+        )
+        check_inst_res = (await session.execute(check_inst_query)).scalar()
+        if check_inst_res is None:
+            raise GlobalException(InstructorNotFound(), status.HTTP_400_BAD_REQUEST)
         query = (
             select(func.count(Course.id))
             .select_from(Course)
@@ -204,6 +213,8 @@ async def new_course(data: AddCourseIn, maker: SessionMaker, _: GetFullAdmin):
             await session.execute(insert_section_query)
 
             return CourseCreated(course_id=insert_res)
+        else:
+            raise GlobalException(UnknownError(), status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.delete(
