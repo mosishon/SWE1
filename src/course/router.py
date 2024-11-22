@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import delete, func, insert, select
 
 from src.authentication.dependencies import GetFullAdmin
@@ -13,6 +13,7 @@ from src.course.schemas import (
     CourseSchema,
     CourseSectionSchema,
     DeleteCourse,
+    DeleteSectionIn,
     SectionCreated,
 )
 from src.dependencies import SessionMaker
@@ -56,6 +57,23 @@ async def new_section(data: AddSectionIn, maker: SessionMaker, _: GetFullAdmin):
         insert_res = (await session.execute(insert_query)).scalar()
         if insert_res is not None:
             return SectionCreated(section_id=insert_res)
+
+
+@router.delete("/delete-section", status_code=status.HTTP_200_OK)
+async def delete_section(_: GetFullAdmin, maker: SessionMaker, data: DeleteSectionIn):
+    async with maker.begin() as session:
+        section = await session.execute(
+            select(CourseSection).where(CourseSection.id == data.section_id)
+        )
+
+        check_section = section.scalar_one_or_none()
+
+        if not check_section:
+            raise HTTPException(status_code=404, detail="This section does not exist")
+
+        query = delete(CourseSection).where(CourseSection.id == data.section_id)
+
+        await session.execute(query)
 
 
 # TODO Error Handeling
