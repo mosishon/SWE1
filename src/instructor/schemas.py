@@ -96,3 +96,8 @@ class InstructorCreated(BaseModel):
     code: Literal[SuccessCodes.INSTRUCTOR_ADDED] = SuccessCodes.INSTRUCTOR_ADDED
     message: Literal[Messages.INSTRUCTOR_ADDED] = Messages.INSTRUCTOR_ADDED
     instuctor: InstructorSchema
+
+
+class DeleteInstructorIn(BaseModel):
+    instructor_id: int
+
