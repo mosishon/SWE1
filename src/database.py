@@ -50,4 +50,4 @@ async def main_run():
         )
 
 
-asyncio.create_task(main_run())
+asyncio.get_running_loop().create_task(main_run())

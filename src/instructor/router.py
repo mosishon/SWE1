@@ -18,7 +18,7 @@ async def test():
 
 
 # TODO error handeling
-@router.put(
+@router.post(
     "/new-instructor",
     status_code=status.HTTP_201_CREATED,
     tags=["ByAdmin"],

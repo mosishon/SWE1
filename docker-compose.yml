@@ -42,3 +42,4 @@ services:
 
 volumes:
   postgres_data:
+  - ./init.sql:/docker-entrypoint-initdb.d/init.sql

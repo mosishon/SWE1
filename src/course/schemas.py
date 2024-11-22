@@ -66,11 +66,14 @@ class AddCourseIn(BaseModel):
 class ReserveCourseIn(BaseModel):
     course_id: int
 
+
 class UnReservedCourseIn(BaseModel):
     course_id: int
 
+
 class UnreservedCourseOut(BaseModel):
     course_name: str
+
 
 class AddCourseOut(BaseModel):
     course_name: str
