@@ -122,7 +122,7 @@ async def get_all_courses(
         return AllCoursesOut(courses=courses, count=len(courses))
 
 
-@router.put(
+@router.post(
     "/new-course",
     status_code=status.HTTP_201_CREATED,
     responses={400: {"model": CourseExists}, 201: {"model": SectionCreated}},

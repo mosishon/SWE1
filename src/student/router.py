@@ -8,10 +8,11 @@ from src.course.exceptions import CourseNotFound
 from src.course.models import Course
 from src.course.schemas import (
     AddCourseOut,
+    CourseReserved,
     CourseSchema,
+    CourseUnreserved,
     ReserveCourseIn,
     UnReservedCourseIn,
-    UnreservedCourseOut,
 )
 from src.database import get_session_maker
 from src.dependencies import SessionMaker
@@ -110,7 +111,7 @@ async def delete_student(
 )
 async def reserve_course(
     data: ReserveCourseIn, student: GetFullStudent
-) -> AddCourseOut:
+) -> CourseReserved:
     async with get_session_maker().begin() as session:
         student_id = student.id
         check_result = await session.execute(
@@ -126,17 +127,16 @@ async def reserve_course(
             }
         )
         await session.execute(query)
-        return AddCourseOut(course=CourseSchema.model_validate(course))
+        return CourseReserved(course=CourseSchema.model_validate(course))
 
 
 @router.delete(
     "/unreserve-course",
-    response_model=UnreservedCourseOut,
     responses={404: {"model": CourseNotFound}},
 )
 async def unreserve_course(
     data: UnReservedCourseIn, student: GetFullStudent, maker: SessionMaker
-) -> UnreservedCourseOut:
+) -> CourseUnreserved:
     async with maker.begin() as session:
         check_result = await session.execute(
             sa.select(Course).where(Course.id == data.course_id)
@@ -154,7 +154,7 @@ async def unreserve_course(
 
         await session.execute(query)
 
-        return UnreservedCourseOut(course=CourseSchema.model_validate(course))
+        return CourseUnreserved(course=CourseSchema.model_validate(course))
 
 
 @router.get(

@@ -75,12 +75,17 @@ class DeleteCourse(BaseModel):
     course_id: int
 
 
-class UnreservedCourseOut(BaseModel):
+class CourseUnreserved(BaseModel):
     course: CourseSchema
 
 
 class AddCourseOut(BaseModel):
     course: CourseSchema
+
+
+class CourseReserved(BaseModel):
+    course: CourseSchema
+    code: Literal[SuccessCodes.COURSE_RESERVED] = SuccessCodes.COURSE_RESERVED
 
 
 class AddSectionIn(BaseModel):
