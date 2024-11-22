@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    SMALLINT,
     Column,
     Enum,
     ForeignKey,
@@ -9,7 +10,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.course.schemas import CourseSectionCount, DayOfWeek, Unit
+from src.course.schemas import DayOfWeek
 from src.models import BaseModel
 
 CourseSectionToInstructorAssociation = Table(
@@ -86,8 +87,8 @@ class Course(BaseModel):
     is_active: Mapped[bool] = mapped_column(default=True)
     # instructor_id: Mapped[User] = mapped_column(ForeignKey("instructor.id"), index=True)
     # instructor: Mapped[Instructor] = relationship(back_populates="assigned_courses")
-    sections_count: Mapped[int] = mapped_column(Enum(CourseSectionCount))
-    unit: Mapped[int] = mapped_column(Enum(Unit))
+    sections_count: Mapped[int] = mapped_column(SMALLINT)
+    unit: Mapped[int] = mapped_column(SMALLINT)
     importance: Mapped[int] = mapped_column()
     # sections: Mapped[list[CourseSection]] = relationship(
     #     back_populates="courses", secondary=CourseSectionToCourseAssociation
