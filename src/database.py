@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import os
 from functools import lru_cache
 
 from sqlalchemy import insert
@@ -10,10 +11,12 @@ from src.authentication.utils import hash_password, to_async
 from src.config import config
 from src.models import Admin, BaseModel
 
-URI = f"postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@\
-{config.postgres_host}:{config.postgres_port}/{config.postgres_db}"
+URI = os.environ.get("DATABASE_URL")
+if URI is None:
+    URI = f"postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@\
+    {config.postgres_host}:{config.postgres_port}/{config.postgres_db}"
 
-print(URI)
+
 engine = create_async_engine(
     URI,
     pool_size=20,
