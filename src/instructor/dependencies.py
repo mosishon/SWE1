@@ -12,19 +12,20 @@ from src.authentication.dependencies import BackendToken
 from src.authentication.schemas import TokenData
 from src.dependencies import SessionMaker
 from src.instructor.models import Instructor
-from src.instructor.schemas import InstuctorSchema
+from src.instructor.schemas import InstructorSchema
 from src.schemas import UserRole
 
 
 async def get_current_instructor(
     maker: SessionMaker, token: BackendToken
-) -> InstuctorSchema:
+) -> InstructorSchema:
     try:
         algs = [ALGORITHM]
         payload = jwt.decode(token, config.config.SECRET, algorithms=algs)
         token_data = TokenData(**payload)
         if token_data.role != UserRole.INSTRUCTOR:
-            raise pydantic.ValidationError()
+            raise jwt.InvalidTokenError()
+
         if datetime.datetime.fromtimestamp(token_data.exp) < datetime.datetime.now():
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -49,7 +50,7 @@ async def get_current_instructor(
                 detail="Could not find user",
             )
 
-        return InstuctorSchema.model_validate(user)
+        return InstructorSchema.model_validate(user)
 
 
-GetFullInstructor = Annotated[InstuctorSchema, Depends(get_current_instructor)]
+GetFullInstructor = Annotated[InstructorSchema, Depends(get_current_instructor)]

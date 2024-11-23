@@ -2,7 +2,6 @@ import datetime
 from typing import Annotated
 
 import jwt
-import pydantic
 import sqlalchemy as sa
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -63,7 +62,8 @@ async def get_current_admin(maker: SessionMaker, token: BackendToken) -> AdminSc
         payload = jwt.decode(token, config.SECRET, algorithms=algs)
         token_data = TokenData(**payload)
         if token_data.role != UserRole.ADMIN:
-            raise pydantic.ValidationError()
+            raise jwt.InvalidTokenError()
+
         if datetime.datetime.fromtimestamp(token_data.exp) < datetime.datetime.now():
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

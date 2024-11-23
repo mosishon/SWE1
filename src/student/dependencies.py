@@ -24,7 +24,7 @@ async def get_current_student(
         payload = jwt.decode(token, config.config.SECRET, algorithms=algs)
         token_data = TokenData(**payload)
         if token_data.role != UserRole.STUDENT:
-            raise pydantic.ValidationError()
+            raise jwt.InvalidTokenError()
         if datetime.datetime.fromtimestamp(token_data.exp) < datetime.datetime.now():
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

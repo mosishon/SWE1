@@ -164,6 +164,16 @@ async def new_course(
     data: AddCourseIn, maker: SessionMaker, _: GetFullAdmin
 ) -> CourseCreated:
     async with maker.begin() as session:
+        check_sections_query = (
+            select(func.count())
+            .select_from(CourseSection)
+            .filter(CourseSection.id.in_(data.sections_id))
+        )
+        check_sections_res = (await session.execute(check_sections_query)).scalar()
+        if check_sections_res is not None and check_sections_res != len(
+            data.sections_id
+        ):
+            raise GlobalException(SectionNotFound(), status.HTTP_400_BAD_REQUEST)
         check_inst_query = select(Instructor).filter(
             Instructor.id == data.instructor_id
         )
