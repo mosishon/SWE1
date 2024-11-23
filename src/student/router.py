@@ -7,7 +7,6 @@ from src.authentication.utils import hash_password, to_async
 from src.course.exceptions import CourseNotFound
 from src.course.models import Course
 from src.course.schemas import (
-    AddCourseOut,
     CourseInfoSchema,
     CourseReserved,
     CourseSchema,
@@ -107,7 +106,6 @@ async def delete_student(
 
 @router.post(
     "/reserve-course",
-    response_model=AddCourseOut,
     responses={404: {"model": CourseNotFound}},
 )
 async def reserve_course(
