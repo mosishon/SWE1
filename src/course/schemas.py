@@ -55,6 +55,17 @@ class CourseSchema(BaseModel):
         from_attributes = True
 
 
+class CourseInfoSchema(BaseModel):
+    name: str
+    short_name: str
+    sections_count: CourseSectionCount
+    unit: Unit
+    importance: int
+
+    class Config:
+        from_attributes = True
+
+
 class AddCourseIn(BaseModel):
     name: str
     short_name: str
@@ -87,7 +98,7 @@ class AddCourseOut(BaseModel):
 
 
 class CourseReserved(BaseModel):
-    course: CourseSchema
+    course: CourseInfoSchema
     code: Literal[SuccessCodes.COURSE_RESERVED] = SuccessCodes.COURSE_RESERVED
 
 

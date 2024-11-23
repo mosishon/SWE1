@@ -8,6 +8,7 @@ from src.course.exceptions import CourseNotFound
 from src.course.models import Course
 from src.course.schemas import (
     AddCourseOut,
+    CourseInfoSchema,
     CourseReserved,
     CourseSchema,
     CourseUnreserved,
@@ -127,7 +128,7 @@ async def reserve_course(
             }
         )
         await session.execute(query)
-        return CourseReserved(course=CourseSchema.model_validate(course))
+        return CourseReserved(course=CourseInfoSchema.model_validate(course))
 
 
 @router.delete(
