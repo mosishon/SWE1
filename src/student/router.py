@@ -18,7 +18,7 @@ from src.database import get_session_maker
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException
 from src.student.dependencies import GetFullStudent
-from src.student.exceptions import StudentDuplicate, StudentNotFound
+from src.student.exceptions import AlreadyReserved, StudentDuplicate, StudentNotFound
 from src.student.models import ReservedCourse, Student
 from src.student.schemas import (
     AllStudentsOut,
@@ -113,6 +113,14 @@ async def reserve_course(
 ) -> CourseReserved:
     async with get_session_maker().begin() as session:
         student_id = student.id
+        check_exists_q = (
+            sa.select(ReservedCourse)
+            .filter(ReservedCourse.course_id == data.course_id)
+            .filter(ReservedCourse.student_id == student_id)
+        )
+        check_res = (await session.execute(check_exists_q)).scalar()
+        if check_res is not None:
+            raise GlobalException(AlreadyReserved(), status.HTTP_400_BAD_REQUEST)
         check_result = await session.execute(
             sa.select(Course).where(Course.id == data.course_id)
         )

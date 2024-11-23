@@ -17,3 +17,8 @@ class StudentDuplicate(BaseError):
 class StudentNotFound(BaseError):
     code: Literal[ErrorCode.STUDENT_NOT_FOUND] = ErrorCode.STUDENT_NOT_FOUND
     details: Literal["student not found."] = "student not found."
+
+
+class AlreadyReserved(BaseError):
+    code: Literal[ErrorCode.ALREADY_RESERVED] = ErrorCode.ALREADY_RESERVED
+    details: Literal["course already reserved."] = "course already reserved."
