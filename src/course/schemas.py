@@ -51,6 +51,9 @@ class CourseSchema(BaseModel):
     importance: int
     sections: list[CourseSectionSchema]
 
+    class Config:
+        from_attributes = True
+
 
 class AddCourseIn(BaseModel):
     name: str
