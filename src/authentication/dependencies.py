@@ -68,13 +68,11 @@ async def get_current_admin(maker: SessionMaker, token: BackendToken) -> AdminSc
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token expired",
-                headers={"WWW-Authenticate": "Bearer"},
             )
     except (jwt.InvalidTokenError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
         )
     async with maker.begin() as session:
         result = await session.execute(

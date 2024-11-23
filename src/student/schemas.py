@@ -23,7 +23,7 @@ class StudentDeleteIn(BaseModel):
 
 
 class StudentSchema(BaseModel):
-    id: int
+    id: str
     first_name: str
     last_name: str
     national_id: str

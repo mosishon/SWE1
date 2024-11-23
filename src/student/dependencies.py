@@ -39,7 +39,7 @@ async def get_current_student(
         )
     async with maker.begin() as session:
         result = await session.execute(
-            sa.select(Student).where(Student.id == token_data.user_id)
+            sa.select(Student).where(Student.id == str(token_data.user_id))
         )
         user = result.scalar()
 
