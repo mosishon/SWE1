@@ -106,7 +106,7 @@ async def delete_student(
 
 @router.post(
     "/reserve-course",
-    responses={404: {"model": CourseNotFound}},
+    responses={400: {"model": CourseNotFound | AlreadyReserved}},
 )
 async def reserve_course(
     data: ReserveCourseIn, student: GetFullStudent
@@ -139,7 +139,7 @@ async def reserve_course(
 
 @router.delete(
     "/unreserve-course",
-    responses={404: {"model": CourseNotFound}},
+    responses={400: {"model": CourseNotFound}},
 )
 async def unreserve_course(
     data: UnReservedCourseIn, student: GetFullStudent, maker: SessionMaker
@@ -151,7 +151,7 @@ async def unreserve_course(
 
         course = check_result.scalar()
         if not course:
-            raise GlobalException(CourseNotFound(), 400)
+            raise GlobalException(CourseNotFound(), status.HTTP_400_BAD_REQUEST)
 
         query = (
             sa.delete(ReservedCourse)
