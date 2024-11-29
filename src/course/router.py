@@ -19,6 +19,7 @@ from src.course.schemas import (
     CourseSectionSchema,
     DeleteCourse,
     DeleteSectionIn,
+    ListSections,
     SectionCreated,
     SectionDeleted,
 )
@@ -152,6 +153,14 @@ async def get_all_courses(
                 )
             )
         return AllCoursesOut(courses=courses, count=len(courses))
+
+
+@router.get("/all-sections")
+async def all_sections(maker: SessionMaker, _: GetFullAdmin) -> ListSections:
+    async with maker.begin() as session:
+        sections = (await session.execute(select(CourseSection))).scalars().all()
+        objs = [CourseSectionSchema.model_validate(sec) for sec in sections]
+        return ListSections(sections=objs, count=len(objs))
 
 
 @router.post(

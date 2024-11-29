@@ -1,5 +1,9 @@
-from fastapi import APIRouter, status
+from typing import Dict
+
+from fastapi import APIRouter, HTTPException, Query, status
+from pydantic import ValidationError
 from sqlalchemy import delete, insert, select
+from sqlalchemy.exc import SQLAlchemyError
 
 from src.authentication.dependencies import GetFullAdmin
 from src.authentication.utils import hash_password, to_async
@@ -14,15 +18,11 @@ from src.instructor.schemas import (
     DeleteInstructorIn,
     InstructorCreated,
     InstructorDeleted,
+    InstructorListResponse,
     InstructorSchema,
 )
 
 router = APIRouter(tags=["Instructor"])
-
-
-@router.get("/test")
-async def test():
-    return
 
 
 # TODO error handeling
@@ -111,3 +111,70 @@ async def delete_instructor(
 
         await session.execute(query)
         return InstructorDeleted(instructor=InstructorSchema.model_validate(instructor))
+
+
+@router.get("/all", response_model=InstructorListResponse)
+async def get_instructors(
+    maker: SessionMaker,
+    _: GetFullAdmin,
+    limit: int = Query(
+        10, ge=1, le=20, description="Maximum number of instructors to retrieve"
+    ),
+    offset: int = Query(0, ge=0, description="Number of instructors to skip"),
+):
+    try:
+        async with maker.begin() as session:
+            # Query to fetch instructors and their course sections
+            query = (
+                select(Instructor, CourseSection)
+                .select_from(Instructor)
+                .join(
+                    CourseSectionToInstructorAssociation,
+                    CourseSectionToInstructorAssociation.instructor_id == Instructor.id,
+                )
+                .join(
+                    CourseSection,
+                    CourseSection.id
+                    == CourseSectionToInstructorAssociation.course_section_id,
+                )
+                .offset(offset)
+                .limit(limit)
+            )
+
+            # Execute query
+            instructors_query = await session.execute(query)
+            instructors = instructors_query.tuples().all()
+
+            # Build instructor to course section mapping
+            maps: Dict[Instructor, list[CourseSection]] = {}
+            for tup in instructors:
+                inst, sec = tup
+                if inst in maps:
+                    maps[inst].append(sec)
+                else:
+                    maps[inst] = [sec]
+
+            # Validate and construct response
+            inst_objects = []
+            for inst in maps.keys():
+                try:
+                    schema = InstructorSchema.model_validate(inst)
+                    schema.available_sections = [
+                        CourseSectionSchema.model_validate(cs) for cs in maps[inst]
+                    ]
+                    inst_objects.append(schema)
+                except ValidationError as ve:
+                    raise HTTPException(
+                        status_code=422, detail=f"Validation error: {ve.errors()}"
+                    )
+
+            return InstructorListResponse(
+                instructors=inst_objects, total=len(inst_objects)
+            )
+
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=f"Validation error: {ve.errors()}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")

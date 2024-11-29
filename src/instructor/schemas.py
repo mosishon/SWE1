@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, List, Literal
 
 from pydantic import (
     BaseModel,
@@ -106,3 +106,8 @@ class InstructorDeleted(ObjectDeleted):
     code: Literal[SuccessCodes.INSTRUCTOR_DELETED] = SuccessCodes.INSTRUCTOR_DELETED
     message: Literal[Messages.INSTRUCTOR_DELETED] = Messages.INSTRUCTOR_DELETED
     instructor: InstructorSchema
+
+
+class InstructorListResponse(BaseModel):
+    instructors: List[InstructorSchema]
+    total: int

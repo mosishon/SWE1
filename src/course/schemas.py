@@ -1,6 +1,6 @@
 import datetime
 from enum import IntEnum
-from typing import Literal, NewType
+from typing import List, Literal, NewType
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
@@ -31,6 +31,7 @@ class Unit(IntEnum):
 
 
 class CourseSectionSchema(BaseModel):
+    id: int
     day_of_week: DayOfWeek
     start_time: CourseSectionTime
     end_time: CourseSectionTime
@@ -163,3 +164,8 @@ class SectionDeleted(ObjectDeleted):
     code: Literal[SuccessCodes.SECTION_DELETED] = SuccessCodes.SECTION_DELETED
     message: Literal[Messages.SECTION_DELETED] = Messages.SECTION_DELETED
     section: CourseSectionSchema
+
+
+class ListSections(BaseModel):
+    sections: List[CourseSectionSchema]
+    count: int

@@ -13,24 +13,16 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.course.schemas import DayOfWeek
 from src.models import BaseModel
 
-CourseSectionToInstructorAssociation = Table(
-    "coursesection_to_instructor",
-    BaseModel.metadata,
-    Column(
-        "course_section_id",
-        Integer,
-        ForeignKey("course_section.id"),
-        nullable=False,
-        primary_key=True,
-    ),
-    Column(
-        "instructor_id",
-        Integer,
-        ForeignKey("instructor.id"),
-        nullable=False,
-        primary_key=True,
-    ),
-)
+
+class CourseSectionToInstructorAssociation(BaseModel):
+    __tablename__ = "coursesection_to_instructor"
+    course_section_id: Mapped[int] = mapped_column(
+        ForeignKey("course_section.id"), primary_key=True
+    )
+    instructor_id: Mapped[int] = mapped_column(
+        ForeignKey("instructor.id"), primary_key=True
+    )
+
 
 CourseSectionToCourseAssociation = Table(
     "coursesection_to_course",
