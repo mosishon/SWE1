@@ -11,7 +11,9 @@ from src.authentication.utils import hash_password, to_async
 from src.config import config
 from src.models import Admin, BaseModel
 
-URI = os.environ.get("DATABASE_URL")
+URI = os.environ.get(
+    "DATABASE_URL"
+)  # For Docker (Connection to databse in docker is different with local system)
 DB_NAME = os.environ.get("DB_NAME", config.postgres_db)
 if URI is None:
     URI = f"postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@{config.postgres_host}:{config.postgres_port}/{config.postgres_db}"
