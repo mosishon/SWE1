@@ -9,7 +9,6 @@ from src.course.models import Course
 from src.course.schemas import (
     CourseInfoSchema,
     CourseReserved,
-    CourseSchema,
     CourseUnreserved,
     ReserveCourseIn,
     UnReservedCourseIn,
@@ -163,7 +162,12 @@ async def unreserve_course(
 
         await session.execute(query)
 
-        return CourseUnreserved(course=CourseSchema.model_validate(course))
+        return CourseUnreserved(
+            name=course.name,
+            short_name=course.short_name,
+            group=course.group,
+            unit=course.unit,
+        )
 
 
 @router.get("/reserved-course")

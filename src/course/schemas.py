@@ -2,7 +2,7 @@ import datetime
 from enum import IntEnum
 from typing import Literal, NewType
 
-from pydantic import BaseModel, ValidationInfo, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from src.schemas import Messages, ObjectAdded, ObjectDeleted, SuccessCodes
 
@@ -82,7 +82,7 @@ class ReserveCourseIn(BaseModel):
 
 
 class UnReservedCourseIn(BaseModel):
-    course_id: int
+    course_id: int = Field(gt=0)
 
 
 class DeleteCourse(BaseModel):
@@ -90,7 +90,10 @@ class DeleteCourse(BaseModel):
 
 
 class CourseUnreserved(BaseModel):
-    course: CourseSchema
+    name: str
+    short_name: str
+    group: int
+    unit: int
 
 
 class AddCourseOut(BaseModel):
