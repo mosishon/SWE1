@@ -21,7 +21,9 @@ from src.student.dependencies import GetFullStudent
 from src.student.exceptions import AlreadyReserved, StudentDuplicate, StudentNotFound
 from src.student.models import ReservedCourse, Student
 from src.student.schemas import (
+    AllReservedCourseOut,
     AllStudentsOut,
+    ReservedCourseOut,
     StudentAdded,
     StudentDeleted,
     StudentDeleteIn,
@@ -164,11 +166,11 @@ async def unreserve_course(
         return CourseUnreserved(course=CourseSchema.model_validate(course))
 
 
-@router.get(
-    "/reserved-course",
-)
-async def get_reserved_course(student: GetFullStudent):
-    async with get_session_maker().begin() as session:
+@router.get("/reserved-course")
+async def get_reserved_course(
+    student: GetFullStudent, maker: SessionMaker
+) -> AllReservedCourseOut:
+    async with maker.begin() as session:
         student_id = student.id
         query = (
             sa.select(Course.name, Course.unit)
@@ -176,11 +178,13 @@ async def get_reserved_course(student: GetFullStudent):
             .where(ReservedCourse.student_id == student_id)
         )
         result = await session.execute(query)
-        _ = result.scalars().all()
-        # Todo need check response
-        raise GlobalException(
-            StudentNotFound(), status_code=status.HTTP_400_BAD_REQUEST
-        )
+
+        rows = result.all()
+
+        courses_list = [
+            ReservedCourseOut(name=column[0], unit=column[1]) for column in rows
+        ]
+        return AllReservedCourseOut(courses=courses_list)
 
 
 @router.get("/all")
