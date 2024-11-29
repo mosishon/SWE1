@@ -156,7 +156,7 @@ class CourseDeleted(ObjectDeleted):
 
 
 class DeleteSectionIn(BaseModel):
-    section_id: int
+    section_id: int = Field(gt=0)
 
 
 class SectionDeleted(ObjectDeleted):
