@@ -1,3 +1,5 @@
+from typing import Dict
+
 from fastapi import APIRouter, Query, status
 from sqlalchemy import delete, func, insert, select
 
@@ -21,12 +23,14 @@ from src.course.schemas import (
     CourseCreated,
     CourseDeleted,
     CourseSchema,
+    CourseSectionCount,
     CourseSectionSchema,
     DeleteCourse,
     DeleteSectionIn,
     ListSections,
     SectionCreated,
     SectionDeleted,
+    Unit,
 )
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException, UnknownError
@@ -135,7 +139,7 @@ async def get_all_courses(
         )
 
         course = await session.execute(query)
-        result_dict = {}
+        result_dict: Dict[Course, Dict] = {}
 
         # Iterate over the raw query results
         courses = []
@@ -158,8 +162,8 @@ async def get_all_courses(
                     id=c.id,
                     name=c.name,
                     short_name=c.short_name,
-                    sections_count=c.sections_count,
-                    unit=c.unit,
+                    sections_count=CourseSectionCount(c.sections_count),
+                    unit=Unit(c.unit),
                     importance=c.importance,
                     sections=sections_obj,
                     instructor=InstructorSchema.model_validate(instructor),

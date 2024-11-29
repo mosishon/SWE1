@@ -2,8 +2,8 @@ venv/
 __pycache__/
 **/*.dot
 .vscode/
-.env
 .ruff_cache/
 .mypy_cache/
 **/*.rar
 **/*.zip
+**/*.ignored
