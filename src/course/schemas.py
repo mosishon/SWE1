@@ -78,7 +78,7 @@ class AddCourseIn(BaseModel):
 
 
 class ReserveCourseIn(BaseModel):
-    course_id: int
+    course_id: int = Field(gt=0)
 
 
 class UnReservedCourseIn(BaseModel):
