@@ -14,8 +14,6 @@ class Settings(BaseSettings):
     postgres_user: str
     postgres_password: str
     postgres_db: str
-    HOST: str
-    PORT: int
     FORGOT_PASSWORD_URL: str
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
@@ -26,6 +24,7 @@ class Settings(BaseSettings):
     MAIL_SSL_TLS: bool
     USE_CREDENTIALS: bool
     VALIDATE_CERTS: bool
+    FRONTEND_DOMAIN: str
     model_config = SettingsConfigDict(env_file=".env")
 
 

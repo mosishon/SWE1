@@ -2,7 +2,7 @@ import datetime
 from typing import Union
 
 import sqlalchemy as sa
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, status
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from sqlalchemy.exc import IntegrityError
 
@@ -148,9 +148,7 @@ async def create_user(data: StudentRegisterData, maker: SessionMaker) -> Student
 
 # Not complete
 @router.post("/forgot-password", response_model=ResetedSuccessful)
-async def forget_password(
-    data: ForgotPasswordData, maker: SessionMaker, request: Request
-):
+async def forget_password(data: ForgotPasswordData, maker: SessionMaker):
     try:
         async with maker.begin() as session:
             result = await session.execute(
@@ -162,8 +160,8 @@ async def forget_password(
 
             reset_token = await to_async(create_reset_password_token, data.email)
 
-            reset_link = f"https://{config.HOST}:{config.PORT}./{config.FORGOT_PASSWORD_URL}/{reset_token}"
-            html = f"<p>{reset_link}</p>"
+            reset_link = f"https://{config.FRONTEND_DOMAIN}/{config.FORGOT_PASSWORD_URL}/{reset_token}"
+            html = f"<a href='{reset_link}'>Click here to reset password</a>"
 
             message = MessageSchema(
                 subject="Reset password instructions",
@@ -175,7 +173,9 @@ async def forget_password(
             fm = FastMail(mail_conf)
             await fm.send_message(message)
             return ResetedSuccessful(message="Email has been sent")
-    except Exception:
+    except Exception as ex:
+        if isinstance(ex, GlobalException):
+            raise
         raise GlobalException(UnknownError(), status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

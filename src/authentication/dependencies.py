@@ -1,5 +1,5 @@
 import datetime
-from typing import Annotated
+from typing import Annotated, List, Literal
 
 import jwt
 import sqlalchemy as sa
@@ -90,3 +90,30 @@ async def get_current_admin(maker: SessionMaker, token: BackendToken) -> AdminSc
 
 
 GetFullAdmin = Annotated[AdminSchema, Depends(get_current_admin)]
+
+
+async def _allowed_by(
+    token: BackendToken, allowed_by: List[UserRole] | Literal["*"]
+) -> UserRole:
+    try:
+        algs = [ALGORITHM]
+        payload = jwt.decode(token, config.SECRET, algorithms=algs)
+        token_data = TokenData(**payload)
+        if token_data.role is not None:
+            if allowed_by == "*":
+                return token_data.role
+            elif token_data.role in allowed_by:
+                return token_data.role
+        raise jwt.InvalidTokenError()
+
+    except (jwt.InvalidTokenError, ValidationError):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
+
+
+def allowed_by(allowed_roles: List[UserRole] | Literal["*"]):
+    if len(allowed_roles) == 0:
+        raise ValueError("at least need 1 role ")
+    return Depends(lambda token: _allowed_by(token, allowed_roles))

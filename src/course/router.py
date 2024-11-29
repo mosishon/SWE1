@@ -3,7 +3,7 @@ from typing import Dict
 from fastapi import APIRouter, Query, status
 from sqlalchemy import delete, func, insert, select
 
-from src.authentication.dependencies import GetFullAdmin
+from src.authentication.dependencies import GetFullAdmin, allowed_by
 from src.course.exceptions import (
     CourseExists,
     CourseNotFound,
@@ -32,7 +32,7 @@ from src.course.schemas import (
     SectionDeleted,
     Unit,
 )
-from src.dependencies import SessionMaker, allowed_by
+from src.dependencies import SessionMaker
 from src.exceptions import GlobalException, UnknownError
 from src.instructor.exceptions import InstructorNotFound
 from src.instructor.models import CourseInstructor, Instructor
