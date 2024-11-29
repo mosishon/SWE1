@@ -14,8 +14,7 @@ from src.models import Admin, BaseModel
 URI = os.environ.get("DATABASE_URL")
 DB_NAME = os.environ.get("DB_NAME")
 if URI is None:
-    URI = f"postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@\
-    {config.postgres_host}:{config.postgres_port}/{config.postgres_db}"
+    URI = f"postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@{config.postgres_host}:{config.postgres_port}/{config.postgres_db}"
 
 
 engine = create_async_engine(

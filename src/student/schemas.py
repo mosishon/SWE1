@@ -14,6 +14,19 @@ from src.schemas import (
 )
 
 
+class GetReservedCourseIn(BaseModel):
+    studnet_id: int
+
+
+class ReservedCourseOut(BaseModel):
+    name: str
+    unit: int
+
+
+class AllReservedCourseOut(BaseModel):
+    courses: list[ReservedCourseOut]
+
+
 class StudentRegisterData(UserRegisterData):
     student_id: StudnentID
 
