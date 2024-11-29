@@ -8,7 +8,12 @@ from src.course.exceptions import (
     SectionExists,
     SectionNotFound,
 )
-from src.course.models import Course, CourseSection, CourseSectionToCourseAssociation
+from src.course.models import (
+    Course,
+    CourseSection,
+    CourseSectionToCourseAssociation,
+    CourseSectionToInstructorAssociation,
+)
 from src.course.schemas import (
     AddCourseIn,
     AddSectionIn,
@@ -84,8 +89,16 @@ async def delete_section(_: GetFullAdmin, maker: SessionMaker, data: DeleteSecti
         if check_section is None:
             raise GlobalException(SectionNotFound(), status.HTTP_400_BAD_REQUEST)
 
+        query1 = delete(CourseSectionToCourseAssociation).where(
+            CourseSectionToCourseAssociation.course_section_id == data.section_id
+        )
+        query2 = delete(CourseSectionToInstructorAssociation).where(
+            CourseSectionToInstructorAssociation.course_section_id == data.section_id
+        )
         query = delete(CourseSection).where(CourseSection.id == data.section_id)
 
+        await session.execute(query1)
+        await session.execute(query2)
         await session.execute(query)
 
         return SectionDeleted(section=CourseSectionSchema.model_validate(check_section))
@@ -111,12 +124,11 @@ async def get_all_courses(
             )  # Join with Instructor
             .join(
                 CourseSectionToCourseAssociation,
-                Course.id == CourseSectionToCourseAssociation.c.course_id,
+                Course.id == CourseSectionToCourseAssociation.course_id,
             )  # Join association table
             .join(
                 CourseSection,
-                CourseSection.id
-                == CourseSectionToCourseAssociation.c.course_section_id,
+                CourseSection.id == CourseSectionToCourseAssociation.course_section_id,
             )  # Join with CourseSection
             .limit(limit)
             .offset(offset)

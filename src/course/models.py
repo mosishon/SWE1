@@ -1,13 +1,4 @@
-from sqlalchemy import (
-    SMALLINT,
-    Column,
-    Enum,
-    ForeignKey,
-    Integer,
-    PrimaryKeyConstraint,
-    SmallInteger,
-    Table,
-)
+from sqlalchemy import SMALLINT, Enum, ForeignKey, PrimaryKeyConstraint, SmallInteger
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.course.schemas import DayOfWeek
@@ -24,24 +15,12 @@ class CourseSectionToInstructorAssociation(BaseModel):
     )
 
 
-CourseSectionToCourseAssociation = Table(
-    "coursesection_to_course",
-    BaseModel.metadata,
-    Column(
-        "course_id",
-        Integer,
-        ForeignKey("course.id"),
-        nullable=False,
-        primary_key=True,
-    ),
-    Column(
-        "course_section_id",
-        Integer,
-        ForeignKey("course_section.id"),
-        nullable=False,
-        primary_key=True,
-    ),
-)
+class CourseSectionToCourseAssociation(BaseModel):
+    __tablename__ = "coursesection_to_course"
+    course_id: Mapped[int] = mapped_column(ForeignKey("course.id"), primary_key=True)
+    course_section_id: Mapped[int] = mapped_column(
+        ForeignKey("course_section.id"), primary_key=True
+    )
 
 
 # NOT FULL VERSION
