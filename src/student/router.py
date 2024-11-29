@@ -91,7 +91,7 @@ async def delete_student(
 ) -> StudentDeleted:
     async with maker.begin() as session:
         stu = await session.execute(
-            sa.select(sa.func.count(Student.id)).where(Student.id == data.student_id)
+            sa.select(Student).where(Student.id == data.student_id)
         )
         stu = stu.scalar()
         if stu is not None:
