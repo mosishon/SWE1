@@ -96,6 +96,11 @@ async def delete_student(
         stu = stu.scalar()
         if stu is not None:
             await session.execute(
+                sa.delete(ReservedCourse).where(
+                    ReservedCourse.student_id == data.student_id
+                )
+            )
+            await session.execute(
                 sa.delete(Student).where(Student.id == data.student_id)
             )
             return StudentDeleted(
