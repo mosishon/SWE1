@@ -83,6 +83,8 @@ async def new_instructor(data: AddInstructorIn, maker: SessionMaker, _: GetFullA
                     CourseSectionSchema.model_validate(item) for item in sections
                 ]
                 return InstructorCreated(instuctor=inst_obj)
+            else:
+                raise HTTPException(500, "error in adding")
         except Exception as ex:
             print(ex)
             raise
@@ -131,11 +133,13 @@ async def get_instructors(
                 .join(
                     CourseSectionToInstructorAssociation,
                     CourseSectionToInstructorAssociation.instructor_id == Instructor.id,
+                    isouter=True,
                 )
                 .join(
                     CourseSection,
                     CourseSection.id
                     == CourseSectionToInstructorAssociation.course_section_id,
+                    isouter=True,
                 )
                 .offset(offset)
                 .limit(limit)
@@ -144,12 +148,13 @@ async def get_instructors(
             # Execute query
             instructors_query = await session.execute(query)
             instructors = instructors_query.tuples().all()
-
+            print(instructors)
             # Build instructor to course section mapping
             maps: Dict[Instructor, list[CourseSection]] = {}
             for tup in instructors:
                 inst, sec = tup
-                if inst in maps:
+                print(inst.first_name, inst.id)
+                if inst in maps.keys():
                     maps[inst].append(sec)
                 else:
                     maps[inst] = [sec]
@@ -160,7 +165,9 @@ async def get_instructors(
                 try:
                     schema = InstructorSchema.model_validate(inst)
                     schema.available_sections = [
-                        CourseSectionSchema.model_validate(cs) for cs in maps[inst]
+                        CourseSectionSchema.model_validate(cs)
+                        for cs in maps[inst]
+                        if cs is not None
                     ]
                     inst_objects.append(schema)
                 except ValidationError as ve:

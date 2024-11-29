@@ -143,6 +143,7 @@ async def get_all_courses(
             sections_obj = [CourseSectionSchema.model_validate(sec) for sec in sections]
             courses.append(
                 CourseSchema(
+                    id=c.id,
                     name=c.name,
                     short_name=c.short_name,
                     sections_count=c.sections_count,

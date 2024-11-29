@@ -44,6 +44,7 @@ from src.instructor.schemas import InstructorSchema
 
 
 class CourseSchema(BaseModel):
+    id: int
     name: str
     short_name: str
     instructor: InstructorSchema
