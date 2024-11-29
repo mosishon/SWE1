@@ -32,11 +32,12 @@ from src.course.schemas import (
     SectionDeleted,
     Unit,
 )
-from src.dependencies import SessionMaker
+from src.dependencies import SessionMaker, allowed_by
 from src.exceptions import GlobalException, UnknownError
 from src.instructor.exceptions import InstructorNotFound
 from src.instructor.models import CourseInstructor, Instructor
 from src.instructor.schemas import InstructorSchema
+from src.schemas import UserRole
 
 router = APIRouter(prefix="/course", tags=["Courses"])
 
@@ -114,7 +115,7 @@ async def delete_section(_: GetFullAdmin, maker: SessionMaker, data: DeleteSecti
 )
 async def get_all_courses(
     maker: SessionMaker,
-    _: GetFullAdmin,
+    _: UserRole = allowed_by("*"),
     limit: int = Query(gt=0, default=10, lt=25),
     offset: int = Query(gt=-1, default=0),
 ):
@@ -173,7 +174,10 @@ async def get_all_courses(
 
 
 @router.get("/all-sections")
-async def all_sections(maker: SessionMaker, _: GetFullAdmin) -> ListSections:
+async def all_sections(
+    maker: SessionMaker,
+    _: UserRole = allowed_by([UserRole.ADMIN, UserRole.INSTRUCTOR]),
+) -> ListSections:
     async with maker.begin() as session:
         sections = (await session.execute(select(CourseSection))).scalars().all()
         objs = [CourseSectionSchema.model_validate(sec) for sec in sections]

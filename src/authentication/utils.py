@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import jwt
 from passlib.context import CryptContext
@@ -33,7 +33,7 @@ async def to_async(fn, *args):
 def create_reset_password_token(email: str):
     data = {
         "sub": email,
-        "exp": datetime.utcnow() + timedelta(minutes=RESET_PASSWORD_EXP_TIME),
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=RESET_PASSWORD_EXP_TIME),
     }
     token = jwt.encode(data, config.FORGET_PASSWORD_SECRET, ALGORITHM)
     return token
