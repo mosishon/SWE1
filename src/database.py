@@ -12,7 +12,7 @@ from src.config import config
 from src.models import Admin, BaseModel
 
 URI = os.environ.get("DATABASE_URL")
-DB_NAME = os.environ.get("DB_NAME")
+DB_NAME = os.environ.get("DB_NAME", config.postgres_db)
 if URI is None:
     URI = f"postgresql+asyncpg://{config.postgres_user}:{config.postgres_password}@{config.postgres_host}:{config.postgres_port}/{config.postgres_db}"
 

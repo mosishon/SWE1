@@ -37,4 +37,6 @@ async def _allowed_by(
 
 
 def allowed_by(allowed_roles: List[UserRole] | Literal["*"]):
+    if len(allowed_roles) == 0:
+        raise ValueError("at least need 1 role ")
     return Depends(lambda token: _allowed_by(token, allowed_roles))
