@@ -1,5 +1,5 @@
 import datetime
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, EmailStr
 
@@ -12,6 +12,11 @@ from src.schemas import (
     UserFullInfo,
     UserRegisterData,
 )
+
+
+class UpdateStudentIn(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 
 class GetReservedCourseIn(BaseModel):

@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 
 from src.authentication.dependencies import GetFullAdmin
@@ -28,6 +28,7 @@ from src.student.schemas import (
     StudentDeleteIn,
     StudentRegisterData,
     StudentSchema,
+    UpdateStudentIn,
 )
 
 router = APIRouter(prefix="/student", tags=["Student"])
@@ -211,3 +212,27 @@ async def get_all_students(
         students = [StudentSchema.model_validate(student) for student in res]
 
         return AllStudentsOut(students=students, count=len(students))
+
+
+@router.put("/update-student")
+async def update_student(
+    student: GetFullStudent, data: UpdateStudentIn, maker: SessionMaker
+):
+    async with maker.begin() as session:
+        check_student = await session.execute(
+            sa.select(Student).where(Student.id == student.id)
+        )
+
+        if not check_student.scalar():
+            raise HTTPException(status_code=404, detail="Student is not found")
+
+        UpdateData = data.dict(exclude_unset=True)
+        print(UpdateData)
+        if not UpdateData:
+            raise HTTPException(status_code=400, detail="No fields provided for update")
+
+        query = sa.update(Student).where(Student.id == student.id).values(**UpdateData)
+
+        await session.execute(query)
+
+        return {"message": "Student updated successfully", "updated_fields": UpdateData}
