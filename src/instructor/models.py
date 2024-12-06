@@ -11,9 +11,11 @@ class CourseInstructor(BaseModel):
     __tablename__ = "course_instructor"
 
     instructor_id: Mapped[int] = mapped_column(
-        ForeignKey("instructor.id"), primary_key=True
+        ForeignKey("instructor.id", ondelete="CASCADE"), primary_key=True
     )
-    course_id: Mapped[int] = mapped_column(ForeignKey("course.id"), primary_key=True)
+    course_id: Mapped[int] = mapped_column(
+        ForeignKey("course.id", ondelete="CASCADE"), primary_key=True
+    )
 
 
 class Instructor(BaseModel):

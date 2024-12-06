@@ -17,9 +17,11 @@ class CourseSectionToInstructorAssociation(BaseModel):
 
 class CourseSectionToCourseAssociation(BaseModel):
     __tablename__ = "coursesection_to_course"
-    course_id: Mapped[int] = mapped_column(ForeignKey("course.id"), primary_key=True)
+    course_id: Mapped[int] = mapped_column(
+        ForeignKey("course.id", ondelete="CASCADE"), primary_key=True
+    )
     course_section_id: Mapped[int] = mapped_column(
-        ForeignKey("course_section.id"), primary_key=True
+        ForeignKey("course_section.id", ondelete="CASCADE"), primary_key=True
     )
 
 
