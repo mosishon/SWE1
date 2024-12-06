@@ -185,20 +185,33 @@ async def forget_password(data: ForgotPasswordData, maker: SessionMaker):
     responses={400: {"model": Union[InvalidResetLink, PasswordsDoseNotMatch]}},
 )
 async def reset_password(data: ResetForegetPasswordData, maker: SessionMaker):
-    try:
-        email = await to_async(decode_reset_password_token, data.secret_token)
-        if email is None:
-            raise GlobalException(InvalidResetLink(), status.HTTP_400_BAD_REQUEST)
-        if data.new_password != data.confirm_password:
-            raise GlobalException(PasswordsDoseNotMatch(), status.HTTP_400_BAD_REQUEST)
+    if data.secret_token is None or not data.secret_token.strip():
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Token.",
+        )
 
-        hashed_password = await to_async(hash_password, data.new_password)
-        async with maker.begin() as session:
-            await session.execute(
-                sa.update(Student)
-                .where(Student.email == email)
-                .values({"password": hashed_password})
-            )
-        return ResetPasswordOut()
-    except Exception:
-        raise GlobalException(UnknownError(), status.HTTP_500_INTERNAL_SERVER_ERROR)
+    email = await to_async(decode_reset_password_token, data.secret_token)
+
+    if email is None:
+        raise GlobalException(InvalidResetLink(), status.HTTP_400_BAD_REQUEST)
+
+    if not data.new_password.strip() or not data.confirm_password.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Fill the passsword fields.",
+        )
+
+    if data.new_password != data.confirm_password:
+        raise GlobalException(PasswordsDoseNotMatch(), status.HTTP_400_BAD_REQUEST)
+
+    hashed_password = await to_async(hash_password, data.new_password)
+
+    async with maker.begin() as session:
+        await session.execute(
+            sa.update(Student)
+            .where(Student.email == email)
+            .values({"password": hashed_password})
+        )
+
+    return ResetPasswordOut()
