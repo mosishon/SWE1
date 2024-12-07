@@ -2,7 +2,7 @@ from typing import Dict
 
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import ValidationError
-from sqlalchemy import delete, insert, select
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.authentication.dependencies import GetFullAdmin
@@ -20,6 +20,7 @@ from src.instructor.schemas import (
     InstructorDeleted,
     InstructorListResponse,
     InstructorSchema,
+    UpdateInstructorIn,
 )
 
 router = APIRouter(tags=["Instructor"])
@@ -185,3 +186,43 @@ async def get_instructors(
         raise HTTPException(status_code=422, detail=f"Validation error: {ve.errors()}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.put("/update-instructor/{Instructor_id}")
+async def update_student(
+    _: GetFullAdmin, data: UpdateInstructorIn, maker: SessionMaker, Instructor_id
+):
+    async with maker.begin() as session:
+        check_instructor = await session.execute(
+            select(Instructor).where(Instructor.id == int(Instructor_id))
+        )
+
+        if not check_instructor.scalar():
+            raise HTTPException(status_code=404, detail="Instructor is not found")
+
+        UpdateData = data.dict(exclude_unset=True)
+
+        if not UpdateData:
+            raise HTTPException(
+                status_code=400,
+                detail="No fields or correct fields provided for update",
+            )
+
+        for val in UpdateData.values():
+            if not val.strip():
+                raise HTTPException(
+                    status_code=400, detail="Fill the field with proper value"
+                )
+
+        query = (
+            update(Instructor)
+            .where(Instructor.id == int(Instructor_id))
+            .values(**UpdateData)
+        )
+
+        await session.execute(query)
+
+        return {
+            "message": "Instructor updated successfully",
+            "updated_fields": UpdateData,
+        }

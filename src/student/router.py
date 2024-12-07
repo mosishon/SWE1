@@ -227,7 +227,7 @@ async def update_student(
             raise HTTPException(status_code=404, detail="Student is not found")
 
         UpdateData = data.dict(exclude_unset=True)
-        print(UpdateData)
+
         if not UpdateData:
             raise HTTPException(
                 status_code=400,
