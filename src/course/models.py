@@ -8,10 +8,10 @@ from src.models import BaseModel
 class CourseSectionToInstructorAssociation(BaseModel):
     __tablename__ = "coursesection_to_instructor"
     course_section_id: Mapped[int] = mapped_column(
-        ForeignKey("course_section.id"), primary_key=True
+        ForeignKey("course_section.id", ondelete="CASCADE"), primary_key=True
     )
     instructor_id: Mapped[int] = mapped_column(
-        ForeignKey("instructor.id"), primary_key=True
+        ForeignKey("instructor.id", ondelete="CASCADE"), primary_key=True
     )
 
 
