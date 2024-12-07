@@ -30,3 +30,12 @@ class SectionCountValue(BaseError):
     details: Literal[
         "Section count value should be more than zero."
     ] = "Section count value should be more than zero."
+
+
+class CourseUnitValue(BaseError):
+    code: Literal[
+        ErrorCode.COURSE_UNIT_MORE_THAN_ZERO
+    ] = ErrorCode.COURSE_UNIT_MORE_THAN_ZERO
+    details: Literal[
+        "Course Unit value should be more than zero."
+    ] = "Course Unit value should be more than zero."
