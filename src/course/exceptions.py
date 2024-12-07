@@ -21,3 +21,12 @@ class CourseNotFound(BaseError):
 class SectionNotFound(BaseError):
     code: Literal[ErrorCode.SECTION_NOT_FOUND] = ErrorCode.SECTION_NOT_FOUND
     details: Literal["Seciton not found."] = "Seciton not found."
+
+
+class SectionCountValue(BaseError):
+    code: Literal[
+        ErrorCode.SECTION_COUNT_MORE_THAN_ZERO
+    ] = ErrorCode.SECTION_COUNT_MORE_THAN_ZERO
+    details: Literal[
+        "Section count value should be more than zero."
+    ] = "Section count value should be more than zero."

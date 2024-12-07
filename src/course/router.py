@@ -7,6 +7,7 @@ from src.authentication.dependencies import GetFullAdmin, allowed_by
 from src.course.exceptions import (
     CourseExists,
     CourseNotFound,
+    SectionCountValue,
     SectionExists,
     SectionNotFound,
 )
@@ -195,6 +196,9 @@ async def new_course(
     data: AddCourseIn, maker: SessionMaker, _: GetFullAdmin
 ) -> CourseCreated:
     async with maker.begin() as session:
+        if data.section_count < 1:
+            raise GlobalException(SectionCountValue(), status.HTTP_400_BAD_REQUEST)
+
         check_sections_query = (
             select(func.count())
             .select_from(CourseSection)
