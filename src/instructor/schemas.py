@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import TYPE_CHECKING, List, Literal
+from typing import TYPE_CHECKING, List, Literal, Optional
 
 from pydantic import (
     BaseModel,
@@ -111,3 +111,8 @@ class InstructorDeleted(ObjectDeleted):
 class InstructorListResponse(BaseModel):
     instructors: List[InstructorSchema]
     total: int
+
+
+class UpdateInstructorIn(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None

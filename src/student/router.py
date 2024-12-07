@@ -227,9 +227,18 @@ async def update_student(
             raise HTTPException(status_code=404, detail="Student is not found")
 
         UpdateData = data.dict(exclude_unset=True)
-        print(UpdateData)
+
         if not UpdateData:
-            raise HTTPException(status_code=400, detail="No fields provided for update")
+            raise HTTPException(
+                status_code=400,
+                detail="No fields or correct fields provided for update",
+            )
+
+        for val in UpdateData.values():
+            if not val.strip():
+                raise HTTPException(
+                    status_code=400, detail="Fill the field with proper value"
+                )
 
         query = sa.update(Student).where(Student.id == student.id).values(**UpdateData)
 
