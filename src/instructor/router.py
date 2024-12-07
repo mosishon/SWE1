@@ -189,7 +189,7 @@ async def get_instructors(
 
 
 @router.put("/update-instructor/{Instructor_id}")
-async def update_student(
+async def update_instructor(
     _: GetFullAdmin, data: UpdateInstructorIn, maker: SessionMaker, Instructor_id
 ):
     async with maker.begin() as session:
