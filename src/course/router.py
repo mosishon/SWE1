@@ -24,6 +24,7 @@ from src.course.schemas import (
     AllCoursesOut,
     CourseCreated,
     CourseDeleted,
+    CourseInfoSchema,
     CourseSchema,
     CourseSectionCount,
     CourseSectionSchema,
@@ -283,7 +284,7 @@ async def delete_course(
 
         await session.execute(query)
 
-        return CourseDeleted(course=CourseSchema.model_validate(check_course))
+        return CourseDeleted(course=CourseInfoSchema.model_validate(check_course))
 
 
 @router.put("/update-course/{course_id}")

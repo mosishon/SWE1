@@ -154,7 +154,7 @@ class AllCoursesOut(BaseModel):
 class CourseDeleted(ObjectDeleted):
     code: Literal[SuccessCodes.COURSE_DELETED] = SuccessCodes.COURSE_DELETED
     message: Literal[Messages.COURSE_DELETED] = Messages.COURSE_DELETED
-    course: CourseSchema
+    course: CourseInfoSchema
 
 
 class DeleteSectionIn(BaseModel):
