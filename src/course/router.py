@@ -1,7 +1,7 @@
 from typing import Dict
 
-from fastapi import APIRouter, Query, status
-from sqlalchemy import delete, func, insert, select
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy import delete, func, insert, select, update
 
 from src.authentication.dependencies import GetFullAdmin, allowed_by
 from src.course.exceptions import (
@@ -31,6 +31,7 @@ from src.course.schemas import (
     SectionCreated,
     SectionDeleted,
     Unit,
+    UpdateCourseIn,
 )
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException, UnknownError
@@ -276,3 +277,39 @@ async def delete_course(
         await session.execute(query)
 
         return CourseDeleted(course=CourseSchema.model_validate(check_course))
+
+
+@router.put("/update-course/{course_id}")
+async def update_course(
+    _: GetFullAdmin, data: UpdateCourseIn, maker: SessionMaker, course_id
+):
+    async with maker.begin() as session:
+        check_course = await session.execute(
+            select(Course).where(Course.id == int(course_id))
+        )
+
+        if not check_course.scalar():
+            raise HTTPException(status_code=404, detail="Course is not found")
+
+        UpdateData = data.dict(exclude_unset=True)
+
+        if not UpdateData:
+            raise HTTPException(
+                status_code=400,
+                detail="No fields or correct fields provided for update",
+            )
+
+        for val in UpdateData.values():
+            if not str(val).strip():
+                raise HTTPException(
+                    status_code=400, detail="Don't let the field be empty"
+                )
+
+        query = update(Course).where(Course.id == int(course_id)).values(**UpdateData)
+
+        await session.execute(query)
+
+        return {
+            "message": "Course updated successfully",
+            "updated_fields": UpdateData,
+        }

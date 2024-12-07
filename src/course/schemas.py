@@ -1,6 +1,6 @@
 import datetime
 from enum import IntEnum
-from typing import List, Literal, NewType
+from typing import List, Literal, NewType, Optional
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
@@ -170,3 +170,12 @@ class SectionDeleted(ObjectDeleted):
 class ListSections(BaseModel):
     sections: List[CourseSectionSchema]
     count: int
+
+
+class UpdateCourseIn(BaseModel):
+    name: Optional[str] = None
+    short_name: Optional[str] = None
+    unit: Optional[int] = None
+    importance: Optional[int] = None
+    group: Optional[int] = None
+    is_active: Optional[bool] = None
