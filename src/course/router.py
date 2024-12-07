@@ -302,7 +302,7 @@ async def update_course(
         for val in UpdateData.values():
             if not str(val).strip():
                 raise HTTPException(
-                    status_code=400, detail="Don't let the field be empty"
+                    status_code=400, detail="Fill the field with proper value"
                 )
 
         query = update(Course).where(Course.id == int(course_id)).values(**UpdateData)
