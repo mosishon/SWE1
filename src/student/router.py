@@ -214,13 +214,13 @@ async def get_all_students(
         return AllStudentsOut(students=students, count=len(students))
 
 
-@router.put("/update-student")
+@router.put("/update-student/{student_id}")
 async def update_student(
-    student: GetFullStudent, data: UpdateStudentIn, maker: SessionMaker
+    student: GetFullAdmin, data: UpdateStudentIn, maker: SessionMaker, student_id
 ):
     async with maker.begin() as session:
         check_student = await session.execute(
-            sa.select(Student).where(Student.id == student.id)
+            sa.select(Student).where(Student.id == int(student_id))
         )
 
         if not check_student.scalar():
@@ -240,7 +240,9 @@ async def update_student(
                     status_code=400, detail="Fill the field with proper value"
                 )
 
-        query = sa.update(Student).where(Student.id == student.id).values(**UpdateData)
+        query = (
+            sa.update(Student).where(Student.id == int(student_id)).values(**UpdateData)
+        )
 
         await session.execute(query)
 
