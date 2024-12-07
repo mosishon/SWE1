@@ -220,7 +220,7 @@ async def update_student(
 ):
     async with maker.begin() as session:
         check_student = await session.execute(
-            sa.select(Student).where(Student.id == int(student_id))
+            sa.select(Student).where(Student.id == student_id)
         )
 
         if not check_student.scalar():
@@ -240,9 +240,7 @@ async def update_student(
                     status_code=400, detail="Fill the field with proper value"
                 )
 
-        query = (
-            sa.update(Student).where(Student.id == int(student_id)).values(**UpdateData)
-        )
+        query = sa.update(Student).where(Student.id == student_id).values(**UpdateData)
 
         await session.execute(query)
 
