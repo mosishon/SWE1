@@ -29,8 +29,8 @@ class ReservedCourse(BaseModel):
     __tablename__ = "reserved_course"
 
     student_id: Mapped[StudnentID] = mapped_column(
-        ForeignKey("student.id"), primary_key=True, nullable=False
+        ForeignKey("student.id", ondelete="CASCADE"), primary_key=True, nullable=False
     )
     course_id: Mapped[int] = mapped_column(
-        ForeignKey("course.id"), primary_key=True, nullable=False
+        ForeignKey("course.id", ondelete="CASCADE"), primary_key=True, nullable=False
     )
