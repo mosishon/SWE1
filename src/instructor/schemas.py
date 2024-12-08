@@ -116,3 +116,14 @@ class InstructorListResponse(BaseModel):
 class UpdateInstructorIn(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+
+
+class EnrollSectionIn(BaseModel):
+    instructor_id: int
+    section_id: int
+
+
+class SectionEnrolled(BaseModel):
+    code: Literal[SuccessCodes.SECTION_ENROLLED] = SuccessCodes.SECTION_ENROLLED
+    message: Literal[Messages.SECTION_ENROLLED] = Messages.SECTION_ENROLLED
+    section: CourseSectionSchema

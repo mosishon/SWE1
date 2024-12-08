@@ -1,5 +1,7 @@
+from typing import List
+
 from sqlalchemy import SMALLINT, Enum, ForeignKey, PrimaryKeyConstraint, SmallInteger
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.course.schemas import DayOfWeek
 from src.models import BaseModel
@@ -32,6 +34,9 @@ class CourseSectionToCourseAssociation(BaseModel):
 
 # چندین استاد متفاوت ممکنه توی یک ساعت کلاس داشته باشن.
 # مهم اینه یه استاد ثابت توی یک ساعت چند کلاس نداشته باشه
+from src.instructor.models import Instructor
+
+
 class CourseSection(BaseModel):
     __tablename__ = "course_section"
     id: Mapped[int] = mapped_column(autoincrement=True, unique=True)
@@ -46,6 +51,17 @@ class CourseSection(BaseModel):
     #     secondary=CourseSectionToInstructorAssociation,
     # )
 
+    instructors: Mapped[List["Instructor"]] = relationship(
+        "Instructor",
+        secondary="coursesection_to_instructor",
+        back_populates="available_times",
+    )
+
+    courses: Mapped[List["Course"]] = relationship(
+        "Course",
+        secondary="coursesection_to_course",
+        back_populates="sections",
+    )
     __table_args__ = (
         PrimaryKeyConstraint("id", "day_of_week", "start_time", "end_time"),
     )
@@ -66,3 +82,12 @@ class Course(BaseModel):
     # sections: Mapped[list[CourseSection]] = relationship(
     #     back_populates="courses", secondary=CourseSectionToCourseAssociation
     # )
+    sections: Mapped[List["CourseSection"]] = relationship(
+        "CourseSection",
+        secondary="coursesection_to_course",
+        back_populates="courses",
+    )
+
+    students: Mapped[List["Student"]] = relationship(  # type: ignore
+        "Student", secondary="reserved_course", back_populates="reserved_courses"
+    )

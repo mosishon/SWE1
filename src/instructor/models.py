@@ -1,7 +1,8 @@
 import datetime
+from typing import List
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.cutsom_types import HashedPassword, NationalID, PhoneNumber
 from src.models import BaseModel
@@ -31,6 +32,14 @@ class Instructor(BaseModel):
     phone_number: Mapped[PhoneNumber] = mapped_column(unique=True)
     birth_day: Mapped[datetime.date] = mapped_column()
     password: Mapped[HashedPassword] = mapped_column(nullable=False)
+    is_enrollment_submited: Mapped[bool] = mapped_column(default=False)
+
+    available_times: Mapped[List["CourseSection"]] = relationship(  # type: ignore
+        "CourseSection",
+        secondary="coursesection_to_instructor",
+        back_populates="instructors",
+    )
+
     # available_course_sections: Mapped[list["CourseSection"]] = relationship(
     #     back_populates="empty_for_instructor",
     #     secondary="CourseSectionToInstructorAssociation",

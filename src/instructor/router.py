@@ -5,10 +5,11 @@ from pydantic import ValidationError
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.authentication.dependencies import GetFullAdmin
+from src.authentication.dependencies import GetFullAdmin, allowed_by
 from src.authentication.utils import hash_password, to_async
 from src.course.models import CourseSection, CourseSectionToInstructorAssociation
 from src.course.schemas import CourseSectionSchema
+from src.course.service import get_section_service
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException
 from src.instructor.exceptions import InstructorNotFound
@@ -16,19 +17,23 @@ from src.instructor.models import Instructor
 from src.instructor.schemas import (
     AddInstructorIn,
     DeleteInstructorIn,
+    EnrollSectionIn,
     InstructorCreated,
     InstructorDeleted,
     InstructorListResponse,
     InstructorSchema,
+    SectionEnrolled,
     UpdateInstructorIn,
 )
+from src.instructor.service import get_instructor_service
+from src.schemas import UserRole
 
-router = APIRouter(tags=["Instructor"])
+router = APIRouter(prefix="/instructors", tags=["Instructor"])
 
 
 # TODO error handeling
 @router.post(
-    "/new-instructor",
+    "/new",
     status_code=status.HTTP_201_CREATED,
     tags=["ByAdmin"],
     responses={201: {"model": InstructorCreated}},
@@ -92,7 +97,7 @@ async def new_instructor(data: AddInstructorIn, maker: SessionMaker, _: GetFullA
 
 
 @router.delete(
-    "/delete-instructor",
+    "/delete",
     tags=["ByAdmin"],
     responses={400: {"model": InstructorNotFound}},
 )
@@ -188,7 +193,7 @@ async def get_instructors(
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-@router.put("/update-instructor/{Instructor_id}")
+@router.put("/update/{Instructor_id}")
 async def update_instructor(
     _: GetFullAdmin, data: UpdateInstructorIn, maker: SessionMaker, Instructor_id
 ):
@@ -226,3 +231,24 @@ async def update_instructor(
             "message": "Instructor updated successfully",
             "updated_fields": UpdateData,
         }
+
+
+@router.post("/enroll-section", response_model=SectionEnrolled)
+async def enroll_section(
+    data: EnrollSectionIn,
+    maker: SessionMaker,
+    _: UserRole = allowed_by(UserRole.INSTRUCTOR),
+):
+    instructor_service = get_instructor_service()
+    await instructor_service.enroll_section(data.instructor_id, data.section_id)
+    section_service = get_section_service()
+
+    async with maker.begin() as session:
+        return SectionEnrolled(
+            section=CourseSectionSchema.model_validate(
+                await section_service.get_section_by_id(session, data.section_id)
+            )
+        )
+
+
+# TODO write submit for instructor

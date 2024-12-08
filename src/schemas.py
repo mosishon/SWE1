@@ -13,6 +13,7 @@ class SuccessCodes(str, enum.Enum):
     SECTION_ADDED = "SECTION_ADDED"
     COURSE_ADDED = "COURSE_ADDED"
     INSTRUCTOR_ADDED = "INSTRUCTOR_ADDED"
+    SECTION_ENROLLED = "SECTION_ENROLLED"
     INSTRUCTOR_DELETED = "INSTRUCTOR_DELETED"
     COURSE_DELETED = "COURSE_DELETED"
     SECTION_DELETED = "SECTION_DELETED"
@@ -23,6 +24,7 @@ class SuccessCodes(str, enum.Enum):
 class Messages(str, enum.Enum):
     STUDENT_ADDED = "Student added successfully"
     INSTRUCTOR_ADDED = "Instructor added successfully"
+    SECTION_ENROLLED = "Section enrolled successfully"
     STUDENT_DELETED = "Student deleted successfully"
     INSTRUCTOR_DELETED = "Instructor deleted successfully"
     COURSE_DELETED = "Course deleted successfully"
@@ -35,6 +37,7 @@ class UserRole(enum.StrEnum):
     ADMIN = "ADMIN"
     STUDENT = "STUDENT"
     INSTRUCTOR = "INSTRUCTOR"
+    ALL = "ALL"
 
 
 class ErrorCode(str, enum.Enum):
@@ -53,6 +56,7 @@ class ErrorCode(str, enum.Enum):
     ALREADY_RESERVED = "ALREADY_RESERVED"
     SECTION_COUNT_MORE_THAN_ZERO = "SECTION_COUNT_MORE_THAN_ZERO"
     COURSE_UNIT_MORE_THAN_ZERO = "COURSE_UNIT_MORE_THAN_ZERO"
+    SECTION_ALREADY_ENROLLED = "SECTION_ALREADY_ENROLLED"
 
 
 class BaseUser(BaseModel):
