@@ -1,3 +1,7 @@
+# Pre-registration and class 
+### A pre-registration and class scheduling system (Software Engineering course project)
+
+
 ## Project Structure:
 ```
 fastapi-project
