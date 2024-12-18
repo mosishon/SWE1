@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8000"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0" # Limit to 1 CPU core
+          memory: "1024M" # Limit to 1 GB of RAM
+        reservations:
+          cpus: "0.5" # Reserve 0.5 CPU core
+          memory: "512M" # Reserve 512 MB of RAM
+    depends_on:
+      - postgres_db
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:password@postgres_db:5432/swe"
+      DB_NAME: swe
+    volumes:
+      - .:/app
+
+  postgres_db:
+    image: postgres:16
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      DB_NAME: swe
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5" # Limit to 0.5 CPU core
+          memory: "768M" # Limit to 768 MB of RAM
+        reservations:
+          cpus: "0.25" # Reserve 0.25 CPU core
+          memory: "512M" # Reserve 512 MB of RAM
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
