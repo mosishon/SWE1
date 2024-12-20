@@ -1,2 +1,10 @@
 venv/
 __pycache__/
+**/*.dot
+.vscode/
+.ruff_cache/
+.mypy_cache/
+**/*.rar
+**/*.zip
+**/*.ignored
+.env

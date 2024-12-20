@@ -1,3 +1,8 @@
+# Pre-registration and class 
+### A pre-registration and class scheduling system (Software Engineering course project)
+
+
+
 ## Project Structure:
 ```
 fastapi-project
@@ -42,4 +47,11 @@ fastapi-project
 ├── .gitignore
 ├── logging.ini
 └── alembic.ini # Alembic configs
+```
+
+# Before Development
+Need to configure pre-commit and install requirements for develpment environment
+```
+pip install -r requirements/dev.txt
+pre-commit install
 ```

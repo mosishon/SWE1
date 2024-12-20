@@ -1,0 +1,13 @@
+alembic
+asyncpg
+bcrypt==4.0.1
+fastapi
+fastapi-mail
+passlib
+psycopg2-binary
+pydantic-settings
+pydantic[email]
+pyjwt
+python-multipart
+sqlalchemy[asyncio]
+uvicorn
