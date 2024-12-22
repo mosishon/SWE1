@@ -2,7 +2,7 @@ import datetime
 from enum import IntEnum
 from typing import List, Literal, NewType, Optional
 
-from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 from src.schemas import Messages, ObjectAdded, ObjectDeleted, SuccessCodes
 
@@ -179,3 +179,24 @@ class UpdateCourseIn(BaseModel):
     importance: Optional[int] = None
     group: Optional[int] = None
     is_active: Optional[bool] = None
+
+
+class UpdateSectionIn(BaseModel):
+    day_of_week: Optional[int] = Field(
+        None, gt=0, lt=7, description="vvalue should be more than zero and less than 7."
+    )
+    start_time: Optional[int] = Field(
+        None, ge=8, le=17, description="Start time must be between 8 and 17 inclusive."
+    )
+    end_time: Optional[int] = Field(
+        None, ge=10, le=19, description="End time must be between 10 and 19 inclusive."
+    )
+
+    @model_validator(mode="after")
+    def validate_time_relationship(cls, model):
+        if model.start_time is not None and model.end_time is not None:
+            if model.start_time >= model.end_time:
+                raise ValueError("Start time must be less than end time.")
+            if (model.end_time - model.start_time) != 2:
+                raise ValueError("Each Section should be 2 hours.")
+        return model

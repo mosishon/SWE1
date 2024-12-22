@@ -35,6 +35,7 @@ from src.course.schemas import (
     SectionDeleted,
     Unit,
     UpdateCourseIn,
+    UpdateSectionIn,
 )
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException, UnknownError
@@ -320,5 +321,46 @@ async def update_course(
 
         return {
             "message": "Course updated successfully",
+            "updated_fields": UpdateData,
+        }
+
+
+# Need Error handling for checking the 2hours time for each section when updating the section info
+@router.put("/update-section/{section_id}")
+async def update_section(
+    _: GetFullAdmin, data: UpdateSectionIn, maker: SessionMaker, section_id
+):
+    async with maker.begin() as session:
+        check_section = await session.execute(
+            select(CourseSection).where(CourseSection.id == int(section_id))
+        )
+
+        if not check_section.scalar():
+            raise HTTPException(status_code=404, detail="Section is not found")
+
+        UpdateData = data.dict(exclude_unset=True)
+
+        if not UpdateData:
+            raise HTTPException(
+                status_code=400,
+                detail="No fields or correct fields provided for update",
+            )
+
+        for val in UpdateData.values():
+            if not str(val).strip():
+                raise HTTPException(
+                    status_code=400, detail="Fill the field with proper value"
+                )
+
+        query = (
+            update(CourseSection)
+            .where(CourseSection.id == int(section_id))
+            .values(**UpdateData)
+        )
+
+        await session.execute(query)
+
+        return {
+            "message": "Section updated successfully",
             "updated_fields": UpdateData,
         }
