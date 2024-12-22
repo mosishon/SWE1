@@ -37,6 +37,7 @@ from src.authentication.utils import (
 from src.config import config
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException, UnknownError
+from src.instructor.models import Instructor
 from src.models import Admin
 from src.schemas import UserRole
 from src.student.exceptions import StudentDuplicate
@@ -59,8 +60,12 @@ async def login(data: OAuthLoginData, maker: SessionMaker):
         adres = await session.execute(
             sa.select(Admin).where(Admin.username == data.username)
         )
+        insres = await session.execute(
+            sa.select(Instructor).where(Instructor.username == data.username)
+        )
         row = stres.scalar()
         adrow = adres.scalar()
+        insres = insres.scalar()
         if row and await to_async(verify_pwd, data.password, row.password):
             user_data = {
                 "user_id": row.id,
@@ -83,6 +88,18 @@ async def login(data: OAuthLoginData, maker: SessionMaker):
             }
 
             return await to_async(create_access_token, TokenData(**user_data))
+        elif insres and await to_async(verify_pwd, data.password, insres.password):
+            user_data = {
+                "user_id": insres.id,
+                "role": UserRole.INSTRUCTOR,
+                "exp": (
+                    datetime.datetime.now()
+                    + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                ).timestamp(),
+            }
+
+            return await to_async(create_access_token, TokenData(**user_data))
+
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
