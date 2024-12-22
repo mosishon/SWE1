@@ -1,15 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
 from src.authentication.router import router as auth_router
 from src.course.router import router as course_router
+from src.course.utils import retreive_orginzer_data_from_db
 from src.dependencies import SessionMaker
 from src.exceptions import GlobalException
 from src.instructor.router import router as instructor_router
-from src.student.models import Student
 from src.student.router import router as student_router
 
 app = FastAPI(debug=True)
@@ -30,12 +28,7 @@ origins = [
 
 @app.get("/test")
 async def test(maker: SessionMaker):
-    async with maker.begin() as session:
-        res = await session.execute(
-            select(Student).options(selectinload(Student.reserved_courses))
-        )
-        for student in res.unique().scalars().all():
-            print(student.reserved_courses)
+    await retreive_orginzer_data_from_db()
 
 
 app.add_middleware(

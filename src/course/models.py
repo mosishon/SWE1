@@ -74,8 +74,10 @@ class Course(BaseModel):
     short_name: Mapped[str] = mapped_column(primary_key=True)
     group: Mapped[int] = mapped_column(primary_key=True)
     is_active: Mapped[bool] = mapped_column(default=True)
-    # instructor_id: Mapped[User] = mapped_column(ForeignKey("instructor.id"), index=True)
-    # instructor: Mapped[Instructor] = relationship(back_populates="assigned_courses")
+    instructor_id: Mapped[Instructor] = mapped_column(
+        ForeignKey("instructor.id"), index=True
+    )
+    instructor: Mapped[Instructor] = relationship(back_populates="assigned_courses")
     sections_count: Mapped[int] = mapped_column(SMALLINT)
     unit: Mapped[int] = mapped_column(SMALLINT)
     importance: Mapped[int] = mapped_column()
@@ -91,3 +93,6 @@ class Course(BaseModel):
     students: Mapped[List["Student"]] = relationship(  # type: ignore
         "Student", secondary="reserved_course", back_populates="reserved_courses"
     )
+    # instructors: Mapped[list["Instructor"]] = relationship(  # type: ignore
+    #     "Instructor", secondary="course_instructor", back_populates="assigned_courses"
+    # )

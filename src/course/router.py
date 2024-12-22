@@ -240,16 +240,17 @@ async def new_course(
                     "sections_count": data.section_count,
                     "unit": data.unit,
                     "importance": data.importance,
+                    "instructor_id": data.instructor_id,
                 }
             )
             .returning(Course.id)
         )
 
-        course_id = insert_res = (await session.execute(insert_query)).scalar()
-        insert_course_instructor_query = insert(CourseInstructor).values(
-            {"instructor_id": data.instructor_id, "course_id": course_id}
-        )
-        await session.execute(insert_course_instructor_query)
+        insert_res = (await session.execute(insert_query)).scalar()
+        # insert_course_instructor_query = insert(CourseInstructor).values(
+        #     {"instructor_id": data.instructor_id, "course_id": course_id}
+        # )
+        # await session.execute(insert_course_instructor_query)
 
         if insert_res is not None:
             sections = [

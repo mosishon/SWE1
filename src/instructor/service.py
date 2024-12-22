@@ -58,7 +58,7 @@ class InstructorService:
             is_instructor_exists = await self.is_instructor_exists(
                 session, instructor_id
             )
-            if is_instructor_exists == 0:
+            if not is_instructor_exists:
                 raise GlobalException(InstructorNotFound(), 400)
 
             # Check if Course section exists
@@ -67,7 +67,7 @@ class InstructorService:
                     sa.select(sa.exists().where(CourseSection.id == course_section_id))
                 )
             ).scalar() or False
-            if is_section_exists == 0:
+            if not is_section_exists:
                 raise GlobalException(SectionNotFound(), 400)
 
             # Check if section already enrolled
