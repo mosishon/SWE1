@@ -99,7 +99,6 @@ def _allowed_by(token: BackendToken, allowed_by: List[UserRole]) -> UserRole:
         token_data = TokenData(**payload)
         if token_data.role is not None:
             # ADMIN HAS FULL ACCESS
-            print(allowed_by)
             if allowed_by == UserRole.ALL:
                 return token_data.role
             elif token_data.role in allowed_by or token_data.role == UserRole.ADMIN:

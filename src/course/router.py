@@ -124,7 +124,7 @@ from sqlalchemy.orm import joinedload
 )
 async def get_all_courses(
     maker: SessionMaker,
-    _: UserRole = allowed_by(UserRole.ALL),
+    # _: UserRole = allowed_by(UserRole.ALL),
     limit: int = Query(gt=0, default=10, lt=25),
     offset: int = Query(gt=-1, default=0),
 ):
