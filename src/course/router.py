@@ -43,6 +43,7 @@ from src.instructor.exceptions import InstructorNotFound
 from src.instructor.models import CourseInstructor, Instructor
 from src.instructor.schemas import InstructorSchema
 from src.schemas import UserRole
+from src.student.models import ReservedCourse
 
 router = APIRouter(prefix="/course", tags=["Courses"])
 
@@ -115,6 +116,9 @@ async def delete_section(_: GetFullAdmin, maker: SessionMaker, data: DeleteSecti
 
 
 # TODO Error Handeling
+from sqlalchemy.orm import joinedload
+
+
 @router.get(
     "/all", status_code=status.HTTP_200_OK, responses={200: {"model": AllCoursesOut}}
 )
@@ -139,11 +143,17 @@ async def get_all_courses(
             .join(
                 CourseSection,
                 CourseSection.id == CourseSectionToCourseAssociation.course_section_id,
+                isouter=True,
             )  # Join with CourseSection
             .limit(limit)
             .offset(offset)
         )
-
+        query2 = (
+            select(Course)
+            .options(joinedload(Course.instructor))
+            .options(joinedload(Course.sections))
+        )
+        a = (await session.execute(query2)).scalars().unique().all()
         course = await session.execute(query)
         result_dict: Dict[Course, Dict] = {}
 
@@ -175,7 +185,24 @@ async def get_all_courses(
                     instructor=InstructorSchema.model_validate(instructor),
                 )
             )
-        return AllCoursesOut(courses=courses, count=len(courses))
+        # return AllCoursesOut(courses=courses, count=len(courses))
+        courses = [
+            CourseSchema(
+                id=c.id,
+                name=c.name,
+                short_name=c.short_name,
+                instructor=InstructorSchema.model_validate(c.instructor),
+                sections_count=CourseSectionCount(c.sections_count),
+                unit=Unit(c.unit),
+                importance=c.importance,
+                sections=[CourseSectionSchema.model_validate(cs) for cs in c.sections],
+            )
+            for c in a
+        ]
+        return AllCoursesOut(
+            courses=courses,
+            count=len(courses),
+        )
 
 
 @router.get("/all-sections")
@@ -364,3 +391,32 @@ async def update_section(
             "message": "Section updated successfully",
             "updated_fields": UpdateData,
         }
+
+
+@router.get("/reservation-result")
+async def reservation_result(maker: SessionMaker):
+    async with maker.begin() as session:
+        reservations = await session.execute(
+            select(
+                ReservedCourse.course_id, func.count().label("reservation_count")
+            ).group_by(ReservedCourse.course_id)
+        )
+        reservation_dict = {
+            row.course_id: row.reservation_count for row in reservations
+        }
+
+        lesson_names = await session.execute(
+            select(Course.id, Course.name).where(Course.id.in_(reservation_dict.keys()))
+        )
+        lesson_dict = {row.id: row.name for row in lesson_names}
+
+        result = [
+            {
+                "course_id": course_id,
+                "course_name": lesson_dict[course_id],
+                "reservation_count": reservation_count,
+            }
+            for course_id, reservation_count in reservation_dict.items()
+        ]
+
+        return result
